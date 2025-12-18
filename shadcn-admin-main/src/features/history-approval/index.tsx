@@ -11,7 +11,7 @@ import { TasksProvider } from './components/tasks-provider'
 // import { tasks } from './data/tasks'
 import { Approval } from './components/approval'
 
-export function Tasks() {
+export function HistoryApproval() {
   return (
     <TasksProvider>
       <Header fixed>
@@ -26,7 +26,7 @@ export function Tasks() {
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-wrap items-end justify-between gap-2'>
           <div>
-            <h2 className='text-2xl font-bold tracking-tight'>To Do List</h2>
+            <h2 className='text-2xl font-bold tracking-tight'>Approval History</h2>
           </div>
           {/* <TasksPrimaryButtons /> */}
         </div>
