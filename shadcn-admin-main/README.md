@@ -64,8 +64,6 @@ If you want to update components using the Shadcn CLI (e.g., `npx shadcn@latest 
 
 **Build Tool:** [Vite](https://vitejs.dev/)
 
-**Routing:** [TanStack Router](https://tanstack.com/router/latest)
-
 **Type Checking:** [TypeScript](https://www.typescriptlang.org/)
 
 **Linting/Formatting:** [ESLint](https://eslint.org/) & [Prettier](https://prettier.io/)
