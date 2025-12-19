@@ -225,7 +225,7 @@ export function Approval() {
             <TableRow key={i}>
               <TableCell>{row.transaction}</TableCell>
               <TableCell>{row.transactionnumber}</TableCell>
-              <TableCell>${row.date.toFixed(2)}</TableCell>
+              <TableCell>{row.date.toFixed(2)}</TableCell>
               <TableCell>{row.requester}</TableCell>
             </TableRow>
           ))}

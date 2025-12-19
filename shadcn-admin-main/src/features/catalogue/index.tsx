@@ -1,21 +1,20 @@
+import { useNavigate } from '@tanstack/react-router'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
-// import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { TasksDialogs } from './components/tasks-dialogs'
-// import { TasksPrimaryButtons } from './components/tasks-primary-buttons'
 import { TasksProvider } from './components/tasks-provider'
-// import { TasksTable } from './components/tasks-table'
-// import { tasks } from './data/tasks'
 import { Approval } from '@/features/dashboard/components/approval'
+import { Button } from '@/components/ui/button'
 
-export function Tasks() {
+export function Catalogue() {
+  const navigate = useNavigate()
+
   return (
     <TasksProvider>
       <Header fixed>
-        {/* <Search /> */}
         <div className='ms-auto flex items-center space-x-4'>
           <ThemeSwitch />
           <ConfigDrawer />
@@ -25,13 +24,18 @@ export function Tasks() {
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-wrap items-end justify-between gap-2'>
-          <div>
-            <h2 className='text-2xl font-bold tracking-tight'>To Do List</h2>
-          </div>
-          {/* <TasksPrimaryButtons /> */}
+          <h2 className='text-2xl font-bold tracking-tight'>List Catalogue</h2>
         </div>
-        <Approval></Approval>
+
+        <Approval />
+
+        <div className='flex flex-wrap items-end justify-between gap-2'>
+          <Button onClick={() => navigate({ to: '/catalogue/add' })}>
+            Add Transaction
+          </Button>
+        </div>
       </Main>
+
       <TasksDialogs />
     </TasksProvider>
   )

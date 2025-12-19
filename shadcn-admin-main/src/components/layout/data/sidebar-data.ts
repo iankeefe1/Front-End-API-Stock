@@ -66,9 +66,9 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: 'Approval',
-          url: '/tasks',
-          icon: ListTodo,
+          title: 'Catalogue',
+          url: '/catalogue',
+          icon: Package,
         },
         {
           title: 'Apps',
