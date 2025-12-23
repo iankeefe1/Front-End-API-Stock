@@ -42,6 +42,8 @@ import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_a
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedCatalogueAddIndexRouteImport } from './routes/_authenticated/catalogue/add/index'
+import { Route as AuthenticatedStockStockInIndexRouteImport } from './routes/_authenticated/Stock/StockIn/index'
+import { Route as AuthenticatedStockStockInAddIndexRouteImport } from './routes/_authenticated/Stock/StockIn/Add/index'
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
@@ -217,6 +219,18 @@ const AuthenticatedCatalogueAddIndexRoute =
     path: '/catalogue/add/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedStockStockInIndexRoute =
+  AuthenticatedStockStockInIndexRouteImport.update({
+    id: '/Stock/StockIn/',
+    path: '/Stock/StockIn/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedStockStockInAddIndexRoute =
+  AuthenticatedStockStockInAddIndexRouteImport.update({
+    id: '/Stock/StockIn/Add/',
+    path: '/Stock/StockIn/Add/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -248,7 +262,9 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/Stock/StockIn': typeof AuthenticatedStockStockInIndexRoute
   '/catalogue/add': typeof AuthenticatedCatalogueAddIndexRoute
+  '/Stock/StockIn/Add': typeof AuthenticatedStockStockInAddIndexRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -279,7 +295,9 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/Stock/StockIn': typeof AuthenticatedStockStockInIndexRoute
   '/catalogue/add': typeof AuthenticatedCatalogueAddIndexRoute
+  '/Stock/StockIn/Add': typeof AuthenticatedStockStockInAddIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -315,7 +333,9 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/Stock/StockIn/': typeof AuthenticatedStockStockInIndexRoute
   '/_authenticated/catalogue/add/': typeof AuthenticatedCatalogueAddIndexRoute
+  '/_authenticated/Stock/StockIn/Add/': typeof AuthenticatedStockStockInAddIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -349,7 +369,9 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/Stock/StockIn'
     | '/catalogue/add'
+    | '/Stock/StockIn/Add'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -380,7 +402,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/Stock/StockIn'
     | '/catalogue/add'
+    | '/Stock/StockIn/Add'
   id:
     | '__root__'
     | '/_authenticated'
@@ -415,7 +439,9 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/_authenticated/Stock/StockIn/'
     | '/_authenticated/catalogue/add/'
+    | '/_authenticated/Stock/StockIn/Add/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -666,6 +692,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCatalogueAddIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/Stock/StockIn/': {
+      id: '/_authenticated/Stock/StockIn/'
+      path: '/Stock/StockIn'
+      fullPath: '/Stock/StockIn'
+      preLoaderRoute: typeof AuthenticatedStockStockInIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/Stock/StockIn/Add/': {
+      id: '/_authenticated/Stock/StockIn/Add/'
+      path: '/Stock/StockIn/Add'
+      fullPath: '/Stock/StockIn/Add'
+      preLoaderRoute: typeof AuthenticatedStockStockInAddIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -703,7 +743,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHistoryApprovalIndexRoute: typeof AuthenticatedHistoryApprovalIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedStockStockInIndexRoute: typeof AuthenticatedStockStockInIndexRoute
   AuthenticatedCatalogueAddIndexRoute: typeof AuthenticatedCatalogueAddIndexRoute
+  AuthenticatedStockStockInAddIndexRoute: typeof AuthenticatedStockStockInAddIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -718,7 +760,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedHistoryApprovalIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedStockStockInIndexRoute: AuthenticatedStockStockInIndexRoute,
   AuthenticatedCatalogueAddIndexRoute: AuthenticatedCatalogueAddIndexRoute,
+  AuthenticatedStockStockInAddIndexRoute:
+    AuthenticatedStockStockInAddIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
