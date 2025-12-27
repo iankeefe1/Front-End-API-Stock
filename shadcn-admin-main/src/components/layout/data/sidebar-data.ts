@@ -18,6 +18,7 @@ import {
   Users,
   MessagesSquare,
   ShieldCheck,
+  Warehouse,
 } from 'lucide-react'
 // import { ClerkLogo } from '@/assets/clerk-logo'
 import { type SidebarData } from '../types'
@@ -69,6 +70,32 @@ export const sidebarData: SidebarData = {
           title: 'Catalogue',
           url: '/catalogue',
           icon: Package,
+        },
+        {
+          title: 'Stock',
+          icon: Warehouse,
+          items: [
+            {
+              title: 'Stock In',
+              url: '/Stock/StockIn',
+            },
+            {
+              title: 'Stock Out',
+              url: '/history-approval',
+            },
+            {
+              title: 'Report Stock',
+              url: '/history-approval',
+            },
+            // {
+            //   title: 'Sign In',
+            //   url: '/clerk/sign-in',
+            // },
+            // {
+            //   title: 'Sign Up',
+            //   url: '/clerk/sign-up',
+            // },
+          ],
         },
         {
           title: 'Apps',
