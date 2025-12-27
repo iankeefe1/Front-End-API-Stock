@@ -21,6 +21,27 @@ import {
 } from "@/components/ui/select"
 import { DatePicker } from "@/components/date-picker"
 
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command"
+
+const counterpartyOptions = [
+  { value: "all", label: "All Apps" },
+  { value: "connected", label: "Connected" },
+  { value: "notConnected", label: "Not Connected" },
+]
+
 export function CatalogueAdd() {
   const [catalogueName, setCatalogueName] = useState("")
   const [catalogueCode, setcatalogueCode] = useState("")
@@ -32,6 +53,7 @@ export function CatalogueAdd() {
   const [imageName, setImageName] = useState("No file chosen")
   const [catalogueprice, setCataloguePrice] = useState<number | "">("")
   const [cataloguecounterparty, setcataloguecounterparty] = useState("")
+  const [counterpartyOpen, setCounterpartyOpen] = useState(false)
 
   const fileRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
@@ -110,23 +132,58 @@ export function CatalogueAdd() {
                     />
                   </div>
 
+                 {/* 🔽 ONLY THIS PART CHANGED */}
                 <div className="space-y-2">
                   <Label>Product Counterparty</Label>
-                  <Select
-                    value={cataloguecounterparty}
-                    onValueChange={setcataloguecounterparty}
+
+                  <Popover
+                    open={counterpartyOpen}
+                    onOpenChange={setCounterpartyOpen}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select Counterparty" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Apps</SelectItem>
-                      <SelectItem value="connected">Connected</SelectItem>
-                      <SelectItem value="notConnected">
-                        Not Connected
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between"
+                      >
+                        {cataloguecounterparty
+                          ? counterpartyOptions.find(
+                              (o) => o.value === cataloguecounterparty
+                            )?.label
+                          : "Select Counterparty"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Search counterparty..." />
+                        <CommandEmpty>No result found.</CommandEmpty>
+                        <CommandGroup>
+                          {counterpartyOptions.map((option) => (
+                            <CommandItem
+                              key={option.value}
+                              value={option.label}
+                              onSelect={() => {
+                                setcataloguecounterparty(option.value)
+                                setCounterpartyOpen(false)
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  cataloguecounterparty === option.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {option.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
@@ -247,12 +304,12 @@ export function CatalogueAdd() {
               {/* ✅ Submit + Back buttons (bottom-right with spacing) */}
                 <div className="pt-4 flex justify-end gap-3">
                   {showapproverejectbutton && (
-                  <Button type="submit" onClick={() => navigate({ to: "/catalogue" })}>
+                  <Button type="submit" onClick={() => window.history.back()}>
                     Approve
                   </Button>)}
                   
                   {showapproverejectbutton && (
-                  <Button type="submit" onClick={() => navigate({ to: "/catalogue" })}>
+                  <Button type="submit" onClick={() => window.history.back()}>
                     Reject
                   </Button>)}
                   
@@ -264,7 +321,7 @@ export function CatalogueAdd() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate({ to: "/catalogue" })}
+                    onClick={() => window.history.back()}
                   >
                     Back
                   </Button>
