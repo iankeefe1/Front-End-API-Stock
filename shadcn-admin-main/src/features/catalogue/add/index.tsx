@@ -60,49 +60,70 @@ export function CatalogueAdd() {
   const showExtraButton = catalogueName.trim() !== "" && imagePreview !== null
   const showapproverejectbutton = catalogueName.trim() == ""
 
-  const handleSubmit = async () => {
-  
-    if (!fileRef.current?.files?.[0]) {
-      alert("Please select an image")
-      return
-    }
+ const handleSubmit = async () => {
+  if (!fileRef.current?.files?.[0]) {
+    alert("Please select an image")
+    return
+  }
 
-    const formData = new FormData()
+  const formData = new FormData()
 
-    formData.append("catalogueName", catalogueName)
-    formData.append("catalogueCode", catalogueCode)
-    formData.append("catalogueCategory", cataloguecategory)
-    formData.append("cataloguePrice", catalogueprice.toString())
-    formData.append("catalogueCounterparty", "1")
-    formData.append(
-      "listingDate",
-      date ? date.toISOString() : ""
-    )
-    formData.append("catalogueSpecification", catalogueSpecification)
-    formData.append("description", description)
+  formData.append("ProductName", catalogueName)
+  formData.append("ProductCode", catalogueCode)
+  formData.append("ProductCategory", "1")
+  formData.append("Price", catalogueprice.toString())
+  formData.append("CounterpartyID", "1")
+  // formData.append("ListingDate", date ? date.toISOString() : "")
+  formData.append("Specification", catalogueSpecification)
+  formData.append("Description", description)
+  formData.append("Image", fileRef.current.files[0])
 
-    // ✅ image
-    formData.append(
-      "image",
-      fileRef.current.files[0]
-    )
+  // eslint-disable-next-line no-console
+  console.log("catalogueName = ", catalogueName);
 
-    const response = await fetch(
-      "https://localhost:5001/api/catalogue",
-      {
-        method: "POST",
-        body: formData,
-      }
-    )
+  // eslint-disable-next-line no-console
+  console.log("catalogueCode = ",  catalogueCode);
 
-    if (!response.ok) {
-      throw new Error("Failed to save catalogue")
-    }
+  // eslint-disable-next-line no-console
+  console.log("ProductCategory = ","1");
 
-    alert("Catalogue saved successfully")
-    navigate({ to: "/catalogue" })
-  
+  // eslint-disable-next-line no-console
+  console.log("catalogueprice = ", catalogueprice.toString());
+
+  // eslint-disable-next-line no-console
+  console.log("ListingDate = ", date ? date.toISOString() : "");
+
+  if (date) {
+  const yyyyMMdd = date.toISOString().split("T")[0]
+
+  // eslint-disable-next-line no-console
+  console.log("ListingDate = ", yyyyMMdd);
+
+  formData.append("ListingDate", yyyyMMdd)
 }
+
+  // eslint-disable-next-line no-console
+  console.log("Image = ", fileRef.current.files[0]);
+
+  fetch("https://localhost:7209/Product/Ping", { method: "POST" });
+
+  const response = await fetch(
+    "https://localhost:7209/Product/SubmitProducts",
+    {
+      method: "POST",
+      body: formData
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to save catalogue")
+  }
+
+  alert("Catalogue saved successfully")
+  navigate({ to: "/catalogue" })
+}
+
+
 
   return (
     <>
