@@ -60,6 +60,50 @@ export function CatalogueAdd() {
   const showExtraButton = catalogueName.trim() !== "" && imagePreview !== null
   const showapproverejectbutton = catalogueName.trim() == ""
 
+  const handleSubmit = async () => {
+  
+    if (!fileRef.current?.files?.[0]) {
+      alert("Please select an image")
+      return
+    }
+
+    const formData = new FormData()
+
+    formData.append("catalogueName", catalogueName)
+    formData.append("catalogueCode", catalogueCode)
+    formData.append("catalogueCategory", cataloguecategory)
+    formData.append("cataloguePrice", catalogueprice.toString())
+    formData.append("catalogueCounterparty", "1")
+    formData.append(
+      "listingDate",
+      date ? date.toISOString() : ""
+    )
+    formData.append("catalogueSpecification", catalogueSpecification)
+    formData.append("description", description)
+
+    // ✅ image
+    formData.append(
+      "image",
+      fileRef.current.files[0]
+    )
+
+    const response = await fetch(
+      "https://localhost:5001/api/catalogue",
+      {
+        method: "POST",
+        body: formData,
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error("Failed to save catalogue")
+    }
+
+    alert("Catalogue saved successfully")
+    navigate({ to: "/catalogue" })
+  
+}
+
   return (
     <>
       <Header>
@@ -314,7 +358,7 @@ export function CatalogueAdd() {
                   </Button>)}
                   
                    {showExtraButton && (
-                  <Button type="submit" onClick={() => navigate({ to: "/catalogue" })}>
+                 <Button type="button" onClick={handleSubmit}>
                     Submit
                   </Button>)}
 
