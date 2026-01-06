@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
 import { ChevronDown } from "lucide-react"
 
 /* =======================
@@ -65,6 +66,7 @@ export type ColumnDef<T> = {
 type DataTableProps<T extends Record<string, unknown>> = {
   endpoint: string
   columns: ColumnDef<T>[]
+  renderActions?: (row: T) => React.ReactNode // 👈 add this
 }
 
 /* =======================
@@ -167,6 +169,7 @@ function ColumnFilter({
 export function DataTable<T extends Record<string, unknown>>({
   endpoint,
   columns,
+  renderActions, // 👈 ADD THIS
 }: DataTableProps<T>) {
   const [data, setData] = React.useState<T[]>([])
   const [filters, setFilters] = React.useState<Record<string, FilterState>>({})
@@ -253,23 +256,39 @@ export function DataTable<T extends Record<string, unknown>>({
           ) : (
             data.slice(0, pageSize).map((row, i) => (
               <TableRow key={i}>
-                {columns.map((col) => (
-                  <TableCell key={col.key}>
-                    {String(row[col.key] ?? "")}
-                  </TableCell>
-                ))}
+                {columns.map((col) => {
+                 const rawValue = row[col.key] as unknown;
+                  let displayValue: string = "";
+
+                  if (col.filterType === "date" && rawValue) {
+                    const date = new Date(rawValue as string);
+                    displayValue = date.toLocaleDateString("en-GB").replace(/\//g, "-");
+                  } else {
+                    displayValue = String(rawValue ?? "");
+                  }
+                  return (
+                    <TableCell key={col.key}>
+                      {displayValue}
+                    </TableCell>
+                  );
+                })}
+                 {/* ✅ Actions column */}
+                <TableCell className="text-right">
+                  {renderActions ? renderActions(row) : null}
+                </TableCell>
               </TableRow>
             ))
           )}
         </TableBody>
 
-        <TableFooter>
+        <TableFooter className="bg-muted/50">
           <TableRow>
-            <TableCell colSpan={columns.length}>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">
-                  Showing {pageSize} rows
-                </span>
+             {/* 👇 Add +1 if you have an Actions column */}
+              <TableCell colSpan={columns.length + 1} className="p-0">
+                <div className="flex justify-between items-center px-4 py-3 w-full bg-muted/30">
+                  <span className="text-sm text-muted-foreground">
+                    Total {Math.min(pageSize, data.length)} of {pageSize} rows
+                  </span>
 
                 <Select
                   value={String(pageSize)}

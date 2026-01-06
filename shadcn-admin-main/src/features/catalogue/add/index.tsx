@@ -1,16 +1,17 @@
 import { useRef, useState } from "react"
+import Swal from 'sweetalert2'
 import { useNavigate } from '@tanstack/react-router'
 import { Separator } from "@/components/ui/separator"
 import { ConfigDrawer } from "@/components/config-drawer"
 import { Header } from "@/components/layout/header"
 import { Main } from "@/components/layout/main"
 import { ProfileDropdown } from "@/components/profile-dropdown"
-import { Search } from "@/components/search"
 import { ThemeSwitch } from "@/components/theme-switch"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { MasterValueApiDropdown } from "@/components/MasterValueApiDropdown"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Select,
@@ -54,13 +55,20 @@ export function CatalogueAdd() {
   const [catalogueprice, setCataloguePrice] = useState<number | "">("")
   const [cataloguecounterparty, setcataloguecounterparty] = useState("")
   const [counterpartyOpen, setCounterpartyOpen] = useState(false)
+  const [catalogueUOM, setCatalogueUOM] = useState("")
+
+  // const [uomOptions, setUomOptions] = useState([]);
+  // const [selectedUom, setSelectedUom] = useState("");
+  // const [UOMopen, setUOM] = useState(false);
 
   const fileRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
   const showExtraButton = catalogueName.trim() !== "" && imagePreview !== null
   const showapproverejectbutton = catalogueName.trim() == ""
 
- const handleSubmit = async () => {
+
+
+  const handleSubmit = async () => {
   if (!fileRef.current?.files?.[0]) {
     alert("Please select an image")
     return
@@ -70,28 +78,14 @@ export function CatalogueAdd() {
 
   formData.append("ProductName", catalogueName)
   formData.append("ProductCode", catalogueCode)
-  formData.append("ProductCategory", "1")
+  formData.append("MVProductCategory", cataloguecategory)
   formData.append("Price", catalogueprice.toString())
   formData.append("CounterpartyID", "1")
   // formData.append("ListingDate", date ? date.toISOString() : "")
   formData.append("Specification", catalogueSpecification)
   formData.append("Description", description)
+  formData.append("MVUnitOfMeasure", catalogueUOM)
   formData.append("Image", fileRef.current.files[0])
-
-  // eslint-disable-next-line no-console
-  console.log("catalogueName = ", catalogueName);
-
-  // eslint-disable-next-line no-console
-  console.log("catalogueCode = ",  catalogueCode);
-
-  // eslint-disable-next-line no-console
-  console.log("ProductCategory = ","1");
-
-  // eslint-disable-next-line no-console
-  console.log("catalogueprice = ", catalogueprice.toString());
-
-  // eslint-disable-next-line no-console
-  console.log("ListingDate = ", date ? date.toISOString() : "");
 
   if (date) {
   const yyyyMMdd = date.toISOString().split("T")[0]
@@ -105,7 +99,7 @@ export function CatalogueAdd() {
   // eslint-disable-next-line no-console
   console.log("Image = ", fileRef.current.files[0]);
 
-  fetch("https://localhost:7209/Product/Ping", { method: "POST" });
+  // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
 
   const response = await fetch(
     "https://localhost:7209/Product/SubmitProducts",
@@ -119,7 +113,12 @@ export function CatalogueAdd() {
     throw new Error("Failed to save catalogue")
   }
 
-  alert("Catalogue saved successfully")
+  Swal.fire({
+  title: "Drag me!",
+  icon: "success",
+  draggable: true
+});
+
   navigate({ to: "/catalogue" })
 }
 
@@ -128,7 +127,6 @@ export function CatalogueAdd() {
   return (
     <>
       <Header>
-        <Search />
         <div className="ms-auto flex items-center gap-4">
           <ThemeSwitch />
           <ConfigDrawer />
@@ -255,22 +253,14 @@ export function CatalogueAdd() {
               {/* Row 3 */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Product Category</Label>
-                  <Select
+                   <Label>Product Category</Label>
+
+                  <MasterValueApiDropdown
+                    apiUrl="https://localhost:7209/MasterValue/GetMasterValueProductCategory"
+                    placeholder="Select Product Category"
                     value={cataloguecategory}
                     onValueChange={setcataloguecategory}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Apps</SelectItem>
-                      <SelectItem value="connected">Connected</SelectItem>
-                      <SelectItem value="notConnected">
-                        Not Connected
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -281,6 +271,16 @@ export function CatalogueAdd() {
                     className="w-full h-10 justify-start"
                   />
                 </div>
+              </div>          
+              <div className="space-y-2">
+                <Label>Unit Of Measurement</Label>
+
+                 <MasterValueApiDropdown
+                  apiUrl="https://localhost:7209/MasterValue/GetMasterValueUOM"
+                  placeholder="Select Unit Of Measurement"
+                  value={catalogueUOM}
+                  onValueChange={setCatalogueUOM}
+                />
               </div>
 
               {/* Specification */}

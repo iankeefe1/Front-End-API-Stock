@@ -6,7 +6,17 @@ import { ProfileDropdown } from "@/components/profile-dropdown"
 import { ThemeSwitch } from "@/components/theme-switch"
 import { TasksDialogs } from "./components/tasks-dialogs"
 import { TasksProvider } from "./components/tasks-provider"
+// import { Button } from "@/components/ui/button"
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { MoreHorizontal } from "lucide-react"
 
 import { DataTable, type ColumnDef } from "@/components/datatable"
 
@@ -17,9 +27,9 @@ import { DataTable, type ColumnDef } from "@/components/datatable"
 ======================= */
 
 type ProductRow = {
-  productid : number
+  productId: number
   productName: string
-  productCategory: number
+  productCategory: string
   price: number
   listingDate: string
 }
@@ -39,7 +49,7 @@ const columns: ColumnDef<ProductRow>[] = [
     key: "productCategory",
     label: "Category",
     filterable: true,
-    filterType: "number",
+    filterType: "string",
   },
   {
     key: "price",
@@ -80,6 +90,35 @@ export function Catalogue() {
         <DataTable<ProductRow>
           endpoint="https://localhost:7209/Product/GetAllProducts"
           columns={columns}
+          renderActions={(row) => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+              {/* ✅ View always available */}
+              <DropdownMenuItem
+                onClick={() => navigate({ to: `/catalogue/add?productid=${row.productId}/pagestate=view` })}
+              >
+                View
+              </DropdownMenuItem>
+
+              {/* ✅ Only show Edit for special data */}
+              {/* {row.price > 100 && ( // 🧠 Example condition: only expensive items are editable
+                <DropdownMenuItem
+                  onClick={() => alert(`Edit Product ID: ${row.productId}`)}
+                >
+                  Edit
+                </DropdownMenuItem>
+              )} */}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         />
 
         <div className="flex flex-wrap items-end justify-between gap-2">
