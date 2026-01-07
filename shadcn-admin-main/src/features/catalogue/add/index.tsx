@@ -1,6 +1,7 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { API_BASE_URL, IMG_API_BASE_URL} from "@/config/api"
 import Swal from 'sweetalert2'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Separator } from "@/components/ui/separator"
 import { ConfigDrawer } from "@/components/config-drawer"
 import { Header } from "@/components/layout/header"
@@ -13,37 +14,25 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { MasterValueApiDropdown } from "@/components/MasterValueApiDropdown"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { CounterpartyDropdown } from "@/components/CounterpartyDropdown"
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select"
 import { DatePicker } from "@/components/date-picker"
-
-import { Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/lib/utils"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command"
-
-const counterpartyOptions = [
-  { value: "all", label: "All Apps" },
-  { value: "connected", label: "Connected" },
-  { value: "notConnected", label: "Not Connected" },
-]
+// const counterpartyOptions = [
+//   { value: "all", label: "All Apps" },
+//   { value: "connected", label: "Connected" },
+//   { value: "notConnected", label: "Not Connected" },
+// ]
 
 export function CatalogueAdd() {
+
+  // -------------------------
+  // State
   const [catalogueName, setCatalogueName] = useState("")
   const [catalogueCode, setcatalogueCode] = useState("")
   const [cataloguecategory, setcataloguecategory] = useState("")
@@ -54,20 +43,73 @@ export function CatalogueAdd() {
   const [imageName, setImageName] = useState("No file chosen")
   const [catalogueprice, setCataloguePrice] = useState<number | "">("")
   const [cataloguecounterparty, setcataloguecounterparty] = useState("")
-  const [counterpartyOpen, setCounterpartyOpen] = useState(false)
   const [catalogueUOM, setCatalogueUOM] = useState("")
+  // State
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
-  // const [uomOptions, setUomOptions] = useState([]);
-  // const [selectedUom, setSelectedUom] = useState("");
-  // const [UOMopen, setUOM] = useState(false);
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
+  // Route params
+  const { productid, pagestate } = useSearch({
+    from: '/_authenticated/catalogue/add/',
+  })
+  // Route params
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
+  // Condition
   const fileRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
-  const showExtraButton = catalogueName.trim() !== "" && imagePreview !== null
+  const showExtraButton = pagestate != "view" && pagestate != "approval"
   const showapproverejectbutton = catalogueName.trim() == ""
+  const isReadOnly = pagestate === 'view' 
+
+  // 👇 final condition
+  const shouldDisable = isReadOnly && !!productid
+  // Condition
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
+  // Fetch product when VIEW
+  useEffect(() => {
+    if (!productid) return
+
+    const fetchProduct = async () => {
+        const res = await fetch(
+          `${API_BASE_URL}/Product/GetProductById?productId=${productid}`
+        )
+
+        if (!res.ok) throw new Error("Failed to load product")
+
+        const data = await res.json()
+
+        setCatalogueName(data.productName ?? "")
+        setcatalogueCode(data.productCode ?? "")
+        setCataloguePrice(data.price ?? "")
+        setcataloguecategory(String(data.mvProductCategory ?? ""))
+        setcataloguecounterparty(String(data.counterpartyID ?? ""))
+        setCatalogueUOM(String(data.mvUnitOfMeasure ?? ""))
+        setcatalogueSpecification(data.specification ?? "")
+        setDescription(data.description ?? "")
+
+        if (data.listingDate) {
+          setDate(new Date(data.listingDate))
+        }
+
+        if (data.imageUrl) {
+          setImagePreview(`${IMG_API_BASE_URL}${data.imageUrl}`)
+          setImageName("Existing image")
+        }
+    }
+
+    fetchProduct()
+  }, [productid])
+  // Fetch product when VIEW
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
+  
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
+  // Button Clicked
   const handleSubmit = async () => {
   if (!fileRef.current?.files?.[0]) {
     alert("Please select an image")
@@ -80,7 +122,7 @@ export function CatalogueAdd() {
   formData.append("ProductCode", catalogueCode)
   formData.append("MVProductCategory", cataloguecategory)
   formData.append("Price", catalogueprice.toString())
-  formData.append("CounterpartyID", "1")
+  formData.append("CounterpartyID", cataloguecounterparty)
   // formData.append("ListingDate", date ? date.toISOString() : "")
   formData.append("Specification", catalogueSpecification)
   formData.append("Description", description)
@@ -102,7 +144,7 @@ export function CatalogueAdd() {
   // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
 
   const response = await fetch(
-    "https://localhost:7209/Product/SubmitProducts",
+    `${API_BASE_URL}/Product/SubmitProducts`,
     {
       method: "POST",
       body: formData
@@ -121,9 +163,8 @@ export function CatalogueAdd() {
 
   navigate({ to: "/catalogue" })
 }
-
-
-
+  // Button Clicked
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
   return (
     <>
       <Header>
@@ -159,6 +200,7 @@ export function CatalogueAdd() {
                     value={catalogueName}
                     onChange={(e) => setCatalogueName(e.target.value)}
                     placeholder="Type here..."
+                    readOnly={shouldDisable}
                   />
                 </div>
 
@@ -168,6 +210,7 @@ export function CatalogueAdd() {
                     value={catalogueCode}
                     onChange={(e) => setcatalogueCode(e.target.value)}
                     placeholder="Type here..."
+                    readOnly={shouldDisable}
                   />
                 </div>
               </div>
@@ -192,6 +235,7 @@ export function CatalogueAdd() {
                           e.preventDefault()
                         }
                       }}
+                      readOnly={shouldDisable}
                     />
                   </div>
 
@@ -199,54 +243,12 @@ export function CatalogueAdd() {
                 <div className="space-y-2">
                   <Label>Product Counterparty</Label>
 
-                  <Popover
-                    open={counterpartyOpen}
-                    onOpenChange={setCounterpartyOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full justify-between"
-                      >
-                        {cataloguecounterparty
-                          ? counterpartyOptions.find(
-                              (o) => o.value === cataloguecounterparty
-                            )?.label
-                          : "Select Counterparty"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Search counterparty..." />
-                        <CommandEmpty>No result found.</CommandEmpty>
-                        <CommandGroup>
-                          {counterpartyOptions.map((option) => (
-                            <CommandItem
-                              key={option.value}
-                              value={option.label}
-                              onSelect={() => {
-                                setcataloguecounterparty(option.value)
-                                setCounterpartyOpen(false)
-                              }}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  cataloguecounterparty === option.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                              {option.label}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                 <CounterpartyDropdown
+                    apiUrl={`${API_BASE_URL}/CounterParty/GetCounterpartyValuesActive`}
+                    value={cataloguecounterparty}
+                    onChange={setcataloguecounterparty}
+                    readOnly={shouldDisable}
+                  />
                 </div>
               </div>
 
@@ -256,10 +258,11 @@ export function CatalogueAdd() {
                    <Label>Product Category</Label>
 
                   <MasterValueApiDropdown
-                    apiUrl="https://localhost:7209/MasterValue/GetMasterValueProductCategory"
+                    apiUrl={`${API_BASE_URL}/MasterValue/GetMasterValueProductCategory`}
                     placeholder="Select Product Category"
                     value={cataloguecategory}
                     onValueChange={setcataloguecategory}
+                    readOnly={shouldDisable}
                   />
                 </div>
 
@@ -269,6 +272,7 @@ export function CatalogueAdd() {
                     selected={date}
                     onSelect={setDate}
                     className="w-full h-10 justify-start"
+                    readOnly={shouldDisable}
                   />
                 </div>
               </div>          
@@ -276,10 +280,11 @@ export function CatalogueAdd() {
                 <Label>Unit Of Measurement</Label>
 
                  <MasterValueApiDropdown
-                  apiUrl="https://localhost:7209/MasterValue/GetMasterValueUOM"
+                  apiUrl={`${API_BASE_URL}/MasterValue/GetMasterValueUOM`}
                   placeholder="Select Unit Of Measurement"
                   value={catalogueUOM}
                   onValueChange={setCatalogueUOM}
+                  readOnly={shouldDisable}
                 />
               </div>
 
@@ -293,6 +298,7 @@ export function CatalogueAdd() {
                   }
                   placeholder="Type here..."
                   className="resize-y"
+                  readOnly={shouldDisable}
                 />
               </div>
 
@@ -308,6 +314,7 @@ export function CatalogueAdd() {
                       variant="secondary"
                       className="h-full rounded-r-none"
                       onClick={() => fileRef.current?.click()}
+                      disabled={shouldDisable}
                     >
                       Choose File
                     </Button>
@@ -335,7 +342,9 @@ export function CatalogueAdd() {
 
                         setImageName(file.name)
                         setImagePreview(URL.createObjectURL(file))
+                        
                       }}
+                      readOnly={shouldDisable}
                     />
                   </div>
                 </div>
@@ -363,22 +372,23 @@ export function CatalogueAdd() {
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Type here..."
                   className="resize-y"
+                  readOnly={shouldDisable}
                 />
               </div>
 
               {/* ✅ Submit + Back buttons (bottom-right with spacing) */}
                 <div className="pt-4 flex justify-end gap-3">
-                  {showapproverejectbutton && (
+                  {showapproverejectbutton && pagestate=="view" && (
                   <Button type="submit" onClick={() => window.history.back()}>
                     Approve
                   </Button>)}
                   
-                  {showapproverejectbutton && (
+                  {showapproverejectbutton && pagestate=="view" && (
                   <Button type="submit" onClick={() => window.history.back()}>
                     Reject
                   </Button>)}
                   
-                   {showExtraButton && (
+                   {showExtraButton  && (
                  <Button type="button" onClick={handleSubmit}>
                     Submit
                   </Button>)}

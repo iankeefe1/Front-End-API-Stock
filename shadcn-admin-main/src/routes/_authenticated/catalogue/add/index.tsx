@@ -9,6 +9,10 @@ const appsSearchSchema = z.object({
     .catch(undefined),
   filter: z.string().optional().catch(''),
   sort: z.enum(['asc', 'desc']).optional().catch(undefined),
+
+  // 👇 ADD THESE
+  productid: z.number().optional(),
+  pagestate: z.enum(['create', 'view', 'edit', 'approval']).optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/catalogue/add/')({

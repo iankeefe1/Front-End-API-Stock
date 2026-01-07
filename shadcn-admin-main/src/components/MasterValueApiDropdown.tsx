@@ -12,10 +12,14 @@ interface MasterValueApiDropdownProps {
   apiUrl: string
   placeholder?: string
   onValueChange?: (value: string) => void
-  labelKey?: string     // default: "masterValue"
-  valueKey?: string     // default: "masterValueId"
-  value?: string        // controlled value
+  labelKey?: string
+  valueKey?: string
+  value?: string
+  disabled?: boolean
+  readOnly?: boolean
 }
+
+type MasterValueApiItem = Record<string, string | number>
 
 export const MasterValueApiDropdown: React.FC<MasterValueApiDropdownProps> = ({
   apiUrl,
@@ -24,26 +28,25 @@ export const MasterValueApiDropdown: React.FC<MasterValueApiDropdownProps> = ({
   labelKey = "masterValueName",
   valueKey = "masterValueId",
   value,
+  disabled = false,
+  readOnly = false,
 }) => {
   const [options, setOptions] = useState<{ value: string; label: string }[]>([])
-  const [selectedLabel, setSelectedLabel] = useState<string>("")
-  const [loading, setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const res = await axios.get(apiUrl)
-        const data = res.data
 
-        const mapped = data.map((item: any) => ({
+        const res = await axios.get<MasterValueApiItem[]>(apiUrl)
+
+        const mapped = res.data.map((item) => ({
           value: String(item[valueKey]),
-          label: item[labelKey],
+          label: String(item[labelKey]),
         }))
 
         setOptions(mapped)
-      } catch (err) {
-        console.error("Failed to fetch MasterValue dropdown data:", err)
       } finally {
         setLoading(false)
       }
@@ -52,32 +55,42 @@ export const MasterValueApiDropdown: React.FC<MasterValueApiDropdownProps> = ({
     fetchData()
   }, [apiUrl, labelKey, valueKey])
 
-  // Update label when value changes
-  useEffect(() => {
-    const selected = options.find((opt) => opt.value === value)
-    setSelectedLabel(selected ? selected.label : "")
-  }, [value, options])
+  const selectedLabel =
+    options.find((opt) => opt.value === value)?.label ?? ""
 
   return (
     <Select
       value={value}
+      disabled={disabled}
       onValueChange={(val) => {
-        if (onValueChange) onValueChange(val)
-      }}
+        if (!readOnly) {
+          onValueChange?.(val)
+        }
+      }}     
     >
-      <SelectTrigger className="w-full">
+      <SelectTrigger
+        className={`w-full ${readOnly ? "cursor-default" : ""}`}
+        onPointerDown={(e) => {
+          if (readOnly) e.preventDefault()
+        }}
+        onKeyDown={(e) => {
+          if (readOnly) e.preventDefault()
+        }}
+      >
         <SelectValue placeholder={placeholder}>
           {loading ? "Loading..." : selectedLabel || placeholder}
         </SelectValue>
       </SelectTrigger>
 
-      <SelectContent>
-        {options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value}>
-            {opt.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
+      {!readOnly && (
+        <SelectContent>
+          {options.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      )}
     </Select>
   )
 }

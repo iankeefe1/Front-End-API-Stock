@@ -14,6 +14,8 @@ type DatePickerProps = {
   onSelect: (date: Date | undefined) => void
   placeholder?: string
   className?: string
+  disabled?: boolean
+  readOnly?: boolean
 }
 
 export function DatePicker({
@@ -21,18 +23,30 @@ export function DatePicker({
   onSelect,
   placeholder = "Pick a date",
   className,
+  disabled = false,
+  readOnly = false,
 }: DatePickerProps) {
+  const isBlocked = disabled || readOnly
+
   return (
-    <Popover>
+    <Popover open={!isBlocked ? undefined : false}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
+          disabled={disabled}
           data-empty={!selected}
           className={cn(
             "w-full h-10 justify-start text-left font-normal",
             "data-[empty=true]:text-muted-foreground",
+            readOnly && "cursor-default bg-muted text-muted-foreground",
             className
           )}
+          onPointerDown={(e) => {
+            if (readOnly) e.preventDefault()
+          }}
+          onKeyDown={(e) => {
+            if (readOnly) e.preventDefault()
+          }}
         >
           {selected ? (
             format(selected, "dd-MM-yyyy")
@@ -43,18 +57,20 @@ export function DatePicker({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          captionLayout="dropdown"
-          selected={selected}
-          onSelect={onSelect}
-          disabled={(date) =>
-            date > new Date() || date < new Date("1900-01-01")
-          }
-          initialFocus
-        />
-      </PopoverContent>
+      {!isBlocked && (
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            captionLayout="dropdown"
+            selected={selected}
+            onSelect={onSelect}
+            disabled={(date) =>
+              date > new Date() || date < new Date("1900-01-01")
+            }
+            initialFocus
+          />
+        </PopoverContent>
+      )}
     </Popover>
   )
 }

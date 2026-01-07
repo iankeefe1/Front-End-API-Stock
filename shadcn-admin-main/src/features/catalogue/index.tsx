@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router"
+import { API_BASE_URL} from "@/config/api"
 import { ConfigDrawer } from "@/components/config-drawer"
 import { Header } from "@/components/layout/header"
 import { Main } from "@/components/layout/main"
@@ -29,6 +30,7 @@ import { DataTable, type ColumnDef } from "@/components/datatable"
 type ProductRow = {
   productId: number
   productName: string
+  counterparty : string
   productCategory: string
   price: number
   listingDate: string
@@ -42,6 +44,12 @@ const columns: ColumnDef<ProductRow>[] = [
   {
     key: "productName",
     label: "Product Name",
+    filterable: true,
+    filterType: "string",
+  },
+  {
+    key: "counterparty",
+    label: "Counter Party Name",
     filterable: true,
     filterType: "string",
   },
@@ -88,7 +96,7 @@ export function Catalogue() {
 
         {/* ✅ GENERIC DATATABLE CALLING .NET API */}
         <DataTable<ProductRow>
-          endpoint="https://localhost:7209/Product/GetAllProducts"
+          endpoint={`${API_BASE_URL}/Product/GetAllProducts`}
           columns={columns}
           renderActions={(row) => (
           <DropdownMenu>
@@ -103,7 +111,11 @@ export function Catalogue() {
 
               {/* ✅ View always available */}
               <DropdownMenuItem
-                onClick={() => navigate({ to: `/catalogue/add?productid=${row.productId}/pagestate=view` })}
+                onClick={() => navigate({ to: "/catalogue/add",
+                                          search: {
+                                            productid: row.productId,
+                                            pagestate: "view", // or "1"
+                                          }, })}
               >
                 View
               </DropdownMenuItem>
