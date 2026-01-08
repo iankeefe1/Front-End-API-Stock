@@ -1,30 +1,39 @@
-import { type QueryClient } from '@tanstack/react-query'
-import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { Toaster } from '@/components/ui/sonner'
-import { NavigationProgress } from '@/components/navigation-progress'
-import { GeneralError } from '@/features/errors/general-error'
-import { NotFoundError } from '@/features/errors/not-found-error'
+import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useAuthStore } from '@/stores/auth-store'
+import { getMe } from '@/lib/api/auth'
 
-export const Route = createRootRouteWithContext<{
-  queryClient: QueryClient
-}>()({
-  component: () => {
-    return (
-      <>
-        <NavigationProgress />
-        <Outlet />
-        <Toaster duration={5000} />
-        {import.meta.env.MODE === 'development' && (
-          <>
-            <ReactQueryDevtools buttonPosition='bottom-left' />
-            <TanStackRouterDevtools position='bottom-right' />
-          </>
-        )}
-      </>
-    )
-  },
-  notFoundComponent: NotFoundError,
-  errorComponent: GeneralError,
+export const Route = createRootRoute({
+  component: () => <Outlet />,
 })
+
+function RootComponent() {
+  const { auth } = useAuthStore()
+
+  useEffect(() => {
+    if (!auth.accessToken || auth.user) return
+
+    getMe(auth.accessToken)
+      .then((user) => {
+        auth.setUser({
+          accountNo: String(user.userID),
+          username: user.username,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role ?? [],
+          exp: Date.now() + 1000 * 60 * 60,
+        })
+      })
+      .catch(() => {
+        auth.reset()
+      })
+  }, [auth])
+
+  return (
+    <>
+      {/* THIS IS REQUIRED */}
+      <Outlet />
+    </>
+  )
+}

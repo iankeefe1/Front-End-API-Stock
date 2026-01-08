@@ -155,6 +155,8 @@ export function CatalogueAdd() {
     throw new Error("Failed to save catalogue")
   }
 
+  
+
   Swal.fire({
   title: "Drag me!",
   icon: "success",
