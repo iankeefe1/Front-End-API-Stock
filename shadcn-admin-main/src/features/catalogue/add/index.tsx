@@ -186,7 +186,7 @@ export function CatalogueAdd() {
 
           <Separator />
 
-          <Card className="max-w-6xl">
+          <Card className="max-w-full">
             <CardHeader>
               <CardTitle className="text-lg">
                 Catalogue Information

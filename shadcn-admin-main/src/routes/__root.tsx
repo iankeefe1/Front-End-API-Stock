@@ -1,39 +1,28 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { createRootRoute, Outlet, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/auth-store'
-import { getMe } from '@/lib/api/auth'
 
 export const Route = createRootRoute({
-  component: () => <Outlet />,
+  component: Root,
 })
 
-function RootComponent() {
+function Root() {
+  const router = useRouter()
   const { auth } = useAuthStore()
 
   useEffect(() => {
-    if (!auth.accessToken || auth.user) return
+    const handler = () => {
+      const hasToken = document.cookie.includes('access_token=')
 
-    getMe(auth.accessToken)
-      .then((user) => {
-        auth.setUser({
-          accountNo: String(user.userID),
-          username: user.username,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          role: user.role ?? [],
-          exp: Date.now() + 1000 * 60 * 60,
-        })
-      })
-      .catch(() => {
+      if (!hasToken) {
         auth.reset()
-      })
-  }, [auth])
+        router.navigate({ to: '/sign-in', replace: true })
+      }
+    }
 
-  return (
-    <>
-      {/* THIS IS REQUIRED */}
-      <Outlet />
-    </>
-  )
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
+  }, [])
+
+  return <Outlet />
 }
