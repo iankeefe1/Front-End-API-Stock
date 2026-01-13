@@ -61,7 +61,7 @@ export function UserAuthForm() {
         exp: Date.now() + 24 * 60 * 60 * 1000,
       })
 
-      console.log("API Response:", res);
+      // console.log("API Response:", res);
 
       auth.setAccessToken(res.token ?? 'logged-in')
 

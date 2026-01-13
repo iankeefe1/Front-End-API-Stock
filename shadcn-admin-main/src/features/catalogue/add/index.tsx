@@ -382,22 +382,25 @@ export function CatalogueAdd() {
                       readOnly={shouldDisable}
                     />
                   </div>
-                </div>
-
-                {/* ✅ smaller preview */}
-                {imagePreview && (
-                  <div className="space-y-2">
-                    <Label className="invisible">Preview</Label>
-                    <div className="relative aspect-[4/3] max-h-56 w-full overflow-hidden rounded-md border bg-muted">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
-                  </div>
-                )}
+                </div>               
               </div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                      {/* ✅ smaller preview */}
+                      {imagePreview && (
+                        <div className="space-y-2">
+                          <Label className="invisible">Preview</Label>
+                          <div className="relative aspect-[4/3] max-h-56 w-full overflow-hidden rounded-md border bg-muted">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="h-full w-full object-contain"
+                            />
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                </div>
 
               {/* Description */}
               <div className="space-y-2">
