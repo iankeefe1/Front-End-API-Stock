@@ -44,6 +44,10 @@ export function CatalogueAdd() {
   const [catalogueprice, setCataloguePrice] = useState<number | "">("")
   const [cataloguecounterparty, setcataloguecounterparty] = useState("")
   const [catalogueUOM, setCatalogueUOM] = useState("")
+  const [errors, setErrors] = useState<{ catalogueName?: string; catalogueCode?: string; cataloguecategory?: 
+    string; date?: string; catalogueSpecification?: string; imageName?: string;
+    catalogueprice?: string; cataloguecounterparty?: string; catalogueUOM?: string; 
+   }>({})
   // State
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -116,44 +120,59 @@ export function CatalogueAdd() {
     return
   }
 
-  const formData = new FormData()
+  const newErrors: typeof errors = {}
+  if (!catalogueName.trim()) newErrors.catalogueName = "Product name is required"
+  if (!catalogueCode.trim()) newErrors.catalogueCode = "Product code is required"
+  if (!cataloguecategory.trim()) newErrors.cataloguecategory = "Catalogue category is required"
+  if (!date) newErrors.date = "Listing Date is required"
+  if (!catalogueSpecification.trim()) newErrors.catalogueSpecification = "Product Specification is required"
+  if (!imageName.trim()) newErrors.imageName = "Product Image is required"
+  if (!catalogueprice) newErrors.catalogueprice = "Product price is required"
+  if (!cataloguecounterparty.trim()) newErrors.cataloguecounterparty = "Product counterparty is required"
+  if (!catalogueUOM.trim()) newErrors.catalogueUOM = "Product UOM is required"
 
-  formData.append("ProductName", catalogueName)
-  formData.append("ProductCode", catalogueCode)
-  formData.append("MVProductCategory", cataloguecategory)
-  formData.append("Price", catalogueprice.toString())
-  formData.append("CounterpartyID", cataloguecounterparty)
-  // formData.append("ListingDate", date ? date.toISOString() : "")
-  formData.append("Specification", catalogueSpecification)
-  formData.append("Description", description)
-  formData.append("MVUnitOfMeasure", catalogueUOM)
-  formData.append("Image", fileRef.current.files[0])
+  setErrors(newErrors)
 
-  if (date) {
-  const yyyyMMdd = date.toISOString().split("T")[0]
+  if (Object.keys(newErrors).length === 0) {
+    const formData = new FormData()
 
-  // eslint-disable-next-line no-console
-  console.log("ListingDate = ", yyyyMMdd);
+    formData.append("ProductName", catalogueName)
+    formData.append("ProductCode", catalogueCode)
+    formData.append("MVProductCategory", cataloguecategory)
+    formData.append("Price", catalogueprice.toString())
+    formData.append("CounterpartyID", cataloguecounterparty)
+    // formData.append("ListingDate", date ? date.toISOString() : "")
+    formData.append("Specification", catalogueSpecification)
+    formData.append("Description", description)
+    formData.append("MVUnitOfMeasure", catalogueUOM)
+    formData.append("Image", fileRef.current.files[0])
 
-  formData.append("ListingDate", yyyyMMdd)
-}
+    if (date) {
+    const yyyyMMdd = date.toISOString().split("T")[0]
 
-  // eslint-disable-next-line no-console
-  console.log("Image = ", fileRef.current.files[0]);
+    // eslint-disable-next-line no-console
+    console.log("ListingDate = ", yyyyMMdd);
 
-  // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
-
-  const response = await fetch(
-    `${API_BASE_URL}/Product/SubmitProducts`,
-    {
-      method: "POST",
-      body: formData
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error("Failed to save catalogue")
+    formData.append("ListingDate", yyyyMMdd)
   }
+
+    // eslint-disable-next-line no-console
+    console.log("Image = ", fileRef.current.files[0]);
+
+    // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
+
+    const response = await fetch(
+      `${API_BASE_URL}/Product/SubmitProducts`,
+      {
+        method: "POST",
+        body: formData
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error("Failed to save catalogue")
+    }
+  
 
   
 
@@ -164,6 +183,7 @@ export function CatalogueAdd() {
 });
 
   navigate({ to: "/catalogue" })
+}
 }
   // Button Clicked
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -185,6 +205,11 @@ export function CatalogueAdd() {
           </h1>
 
           <Separator />
+          
+          {Object.entries(errors).map(([field, message]) => (
+          <p key={field} className="text-red-500 text-sm">
+            {message}
+          </p> ))}
 
           <Card className="max-w-full">
             <CardHeader>
