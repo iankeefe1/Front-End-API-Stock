@@ -52,6 +52,7 @@ export function UserAuthForm() {
       const res = await loginApi(data.username, data.password)
 
       auth.setUser({
+        userID : res.user.userID,
         username: res.user.username,
         firstName: res.user.firstName,
         lastName: res.user.lastName,
@@ -59,6 +60,8 @@ export function UserAuthForm() {
         role: [],
         exp: Date.now() + 24 * 60 * 60 * 1000,
       })
+
+      console.log("API Response:", res);
 
       auth.setAccessToken(res.token ?? 'logged-in')
 

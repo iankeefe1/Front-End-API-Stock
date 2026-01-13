@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { MasterValueApiDropdown } from "@/components/MasterValueApiDropdown"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CounterpartyDropdown } from "@/components/CounterpartyDropdown"
+import { useAuthStore } from '@/stores/auth-store'
 // import {
 //   Select,
 //   SelectContent,
@@ -33,6 +34,7 @@ export function CatalogueAdd() {
 
   // -------------------------
   // State
+  const { auth } = useAuthStore()
   const [catalogueName, setCatalogueName] = useState("")
   const [catalogueCode, setcatalogueCode] = useState("")
   const [cataloguecategory, setcataloguecategory] = useState("")
@@ -71,6 +73,8 @@ export function CatalogueAdd() {
   const shouldDisable = isReadOnly && !!productid
   // Condition
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  const user = auth.user
 
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   // Fetch product when VIEW
@@ -160,9 +164,13 @@ export function CatalogueAdd() {
     console.log("Image = ", fileRef.current.files[0]);
 
     // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
+    
+
+    // eslint-disable-next-line no-console
+    console.log("userId = ",user?.userID);
 
     const response = await fetch(
-      `${API_BASE_URL}/Product/SubmitProducts`,
+      `${API_BASE_URL}/Product/SubmitProducts?userId=${user?.userID}`,
       {
         method: "POST",
         body: formData

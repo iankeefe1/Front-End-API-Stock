@@ -7,6 +7,7 @@ const USER_KEY = 'auth_user'
 const userFromCookie = getCookie(USER_KEY)
 
 export interface AuthUser {
+  userID : number
   accountNo?: string
   username: string
   firstName: string

@@ -49,7 +49,7 @@ export const sidebarData: SidebarData = {
           icon: ListTodo,
           items: [
             {
-              title: 'To Do List',
+              title: 'Inbox',
               url: '/tasks',
             },
             {
