@@ -16,6 +16,25 @@ import { MasterValueApiDropdown } from "@/components/MasterValueApiDropdown"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CounterpartyDropdown } from "@/components/CounterpartyDropdown"
 import { useAuthStore } from '@/stores/auth-store'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+// } from "@/components/ui/alert-dialog"
+// import { useToast } from "@/components/ui/use-toast"
 // import {
 //   Select,
 //   SelectContent,
@@ -50,6 +69,10 @@ export function CatalogueAdd() {
     string; date?: string; catalogueSpecification?: string; imageName?: string;
     catalogueprice?: string; cataloguecounterparty?: string; catalogueUOM?: string; 
    }>({})
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [submitComment, setSubmitComment] = useState("")
+  const [commentError, setCommentError] = useState("")
+  //  const { toast } = useToast()
   // State
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -119,10 +142,12 @@ export function CatalogueAdd() {
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   // Button Clicked
   const handleSubmit = async () => {
-  if (!fileRef.current?.files?.[0]) {
-    alert("Please select an image")
-    return
-  }
+  // if (!fileRef.current?.files?.[0]) {
+  //   toast({
+  //     title: "Image Required",
+  //     description: "Please select an image before submitting.",
+  //     variant: "destructive",
+  //   })
 
   const newErrors: typeof errors = {}
   if (!catalogueName.trim()) newErrors.catalogueName = "Product name is required"
@@ -130,7 +155,11 @@ export function CatalogueAdd() {
   if (!cataloguecategory.trim()) newErrors.cataloguecategory = "Catalogue category is required"
   if (!date) newErrors.date = "Listing Date is required"
   if (!catalogueSpecification.trim()) newErrors.catalogueSpecification = "Product Specification is required"
-  if (!imageName.trim()) newErrors.imageName = "Product Image is required"
+  const file = fileRef.current?.files?.[0]  
+  if (!file) {
+  newErrors.imageName = "Product Image is required"
+  }
+  // if (fileRef.current.files[0] == null) newErrors.imageName = "Product Image is required"
   if (!catalogueprice) newErrors.catalogueprice = "Product price is required"
   if (!cataloguecounterparty.trim()) newErrors.cataloguecounterparty = "Product counterparty is required"
   if (!catalogueUOM.trim()) newErrors.catalogueUOM = "Product UOM is required"
@@ -149,19 +178,21 @@ export function CatalogueAdd() {
     formData.append("Specification", catalogueSpecification)
     formData.append("Description", description)
     formData.append("MVUnitOfMeasure", catalogueUOM)
-    formData.append("Image", fileRef.current.files[0])
+    formData.append("Comment", submitComment)
+    if (file) {
+      formData.append("Image", file) // ✅ safe
+    }
+    
 
     if (date) {
     const yyyyMMdd = date.toISOString().split("T")[0]
 
-    // eslint-disable-next-line no-console
-    console.log("ListingDate = ", yyyyMMdd);
+    // // eslint-disable-next-line no-console
+    // console.log("ListingDate = ", yyyyMMdd);
 
     formData.append("ListingDate", yyyyMMdd)
   }
-
-    // eslint-disable-next-line no-console
-    console.log("Image = ", fileRef.current.files[0]);
+    // console.log("Image = ", fileRef.current.files[0]);
 
     // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
     
@@ -214,10 +245,10 @@ export function CatalogueAdd() {
 
           <Separator />
           
-          {Object.entries(errors).map(([field, message]) => (
+          {/* {Object.entries(errors).map(([field, message]) => (
           <p key={field} className="text-red-500 text-sm">
             {message}
-          </p> ))}
+          </p> ))} */}
 
           <Card className="max-w-full">
             <CardHeader>
@@ -237,6 +268,11 @@ export function CatalogueAdd() {
                     placeholder="Type here..."
                     readOnly={shouldDisable}
                   />
+                  {errors.catalogueName && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.catalogueName}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -247,6 +283,11 @@ export function CatalogueAdd() {
                     placeholder="Type here..."
                     readOnly={shouldDisable}
                   />
+                  {errors.catalogueCode && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.catalogueCode}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -272,6 +313,11 @@ export function CatalogueAdd() {
                       }}
                       readOnly={shouldDisable}
                     />
+                    {errors.catalogueprice && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.catalogueprice}
+                    </p>
+                  )}
                   </div>
 
                  {/* 🔽 ONLY THIS PART CHANGED */}
@@ -284,6 +330,11 @@ export function CatalogueAdd() {
                     onChange={setcataloguecounterparty}
                     readOnly={shouldDisable}
                   />
+                  {errors.cataloguecounterparty && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.cataloguecounterparty}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -299,6 +350,11 @@ export function CatalogueAdd() {
                     onValueChange={setcataloguecategory}
                     readOnly={shouldDisable}
                   />
+                  {errors.cataloguecategory && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.cataloguecategory}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -309,6 +365,11 @@ export function CatalogueAdd() {
                     className="w-full h-10 justify-start"
                     readOnly={shouldDisable}
                   />
+                  {errors.date && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.date}
+                    </p>
+                  )}
                 </div>
               </div>          
               <div className="space-y-2">
@@ -321,6 +382,11 @@ export function CatalogueAdd() {
                   onValueChange={setCatalogueUOM}
                   readOnly={shouldDisable}
                 />
+                {errors.catalogueUOM && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.catalogueUOM}
+                    </p>
+                  )}
               </div>
 
               {/* Specification */}
@@ -335,6 +401,11 @@ export function CatalogueAdd() {
                   className="resize-y"
                   readOnly={shouldDisable}
                 />
+                {errors.catalogueSpecification && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.catalogueSpecification}
+                    </p>
+                  )}
               </div>
 
               {/* Image upload + smaller responsive preview */}
@@ -381,7 +452,13 @@ export function CatalogueAdd() {
                       }}
                       readOnly={shouldDisable}
                     />
+                    
                   </div>
+                  {errors.imageName && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.imageName}
+                    </p>
+                  )}
                 </div>               
               </div>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -427,9 +504,15 @@ export function CatalogueAdd() {
                   </Button>)}
                   
                    {showExtraButton  && (
-                 <Button type="button" onClick={handleSubmit}>
-                    Submit
-                  </Button>)}
+                 <Button
+                  type="submit"
+                  onClick={() => {
+                    setCommentError("")
+                    setConfirmOpen(true)
+                  }}
+                >
+                  Submit
+                </Button>)}
 
                   <Button
                     type="button"
@@ -443,6 +526,56 @@ export function CatalogueAdd() {
             </CardContent>
           </Card>
         </div>
+        <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Confirm Submission</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to submit? Please add a comment first!
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Comment textbox */}
+          <div className="space-y-2">
+            <Label>Comment</Label>
+            <Textarea
+              placeholder="Add your comment here..."
+              value={submitComment}
+              onChange={(e) => {
+                setSubmitComment(e.target.value)
+                setCommentError("")
+              }}
+            />
+            {commentError && (
+              <p className="text-sm text-red-500">{commentError}</p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmOpen(false)}
+            >
+              Back
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => {
+                if (!submitComment.trim()) {
+                  setCommentError("Comment is required")
+                  return
+                }
+                setConfirmOpen(false)
+                handleSubmit()
+              }}
+            >
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </Main>
     </>
   )

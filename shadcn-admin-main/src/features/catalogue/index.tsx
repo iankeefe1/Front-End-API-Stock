@@ -32,6 +32,8 @@ type ProductRow = {
   productName: string
   counterparty : string
   productCategory: string
+  approvalStatus : string
+  active : string
   price: number
   listingDate: string
 }
@@ -56,6 +58,18 @@ const columns: ColumnDef<ProductRow>[] = [
   {
     key: "productCategory",
     label: "Category",
+    filterable: true,
+    filterType: "string",
+  },
+  {
+    key: "approvalStatus",
+    label: "Approval Status",
+    filterable: true,
+    filterType: "string",
+  },
+  {
+    key: "active",
+    label: "Aktif",
     filterable: true,
     filterType: "string",
   },
