@@ -78,7 +78,7 @@ export function CatalogueAdd() {
 
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   // Route params
-  const { productid, pagestate } = useSearch({
+  const { productid, pagestate, approvalid } = useSearch({
     from: '/_authenticated/catalogue/add/',
   })
   // Route params
@@ -89,11 +89,11 @@ export function CatalogueAdd() {
   const fileRef = useRef<HTMLInputElement | null>(null)
   const navigate = useNavigate()
   const showExtraButton = pagestate != "view" && pagestate != "approval"
-  const showapproverejectbutton = catalogueName.trim() == ""
-  const isReadOnly = pagestate === 'view' 
+  const showapproverejectbutton = pagestate === "approval"
+  const isReadOnly = pagestate === 'view' || pagestate ==="approval"
 
   // 👇 final condition
-  const shouldDisable = isReadOnly && !!productid
+  const shouldDisable = isReadOnly && (!!productid || !!approvalid)
   // Condition
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -137,7 +137,43 @@ export function CatalogueAdd() {
   // Fetch product when VIEW
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
+  // Fetch product when approval
+  useEffect(() => {
+    if (!approvalid) return
 
+    const fetchProduct = async () => {
+        const res = await fetch(
+          `${API_BASE_URL}/Product/GetProductByApprovalId?approvalid=${approvalid}`
+        )
+
+        if (!res.ok) throw new Error("Failed to load product")
+
+        const data = await res.json()
+
+        setCatalogueName(data.productName ?? "")
+        setcatalogueCode(data.productCode ?? "")
+        setCataloguePrice(data.price ?? "")
+        setcataloguecategory(String(data.mvProductCategory ?? ""))
+        setcataloguecounterparty(String(data.counterpartyID ?? ""))
+        setCatalogueUOM(String(data.mvUnitOfMeasure ?? ""))
+        setcatalogueSpecification(data.specification ?? "")
+        setDescription(data.description ?? "")
+
+        if (data.listingDate) {
+          setDate(new Date(data.listingDate))
+        }
+
+        if (data.imageUrl) {
+          setImagePreview(`${IMG_API_BASE_URL}${data.imageUrl}`)
+          setImageName("Existing image")
+        }
+    }
+
+    fetchProduct()
+  }, [approvalid])
+  // Fetch product when VIEW
+  // ------------------------------------------------------------------------------------------------------------------------------------------------------
   
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   // Button Clicked
@@ -493,12 +529,12 @@ export function CatalogueAdd() {
 
               {/* ✅ Submit + Back buttons (bottom-right with spacing) */}
                 <div className="pt-4 flex justify-end gap-3">
-                  {showapproverejectbutton && pagestate=="view" && (
+                  {showapproverejectbutton  && (
                   <Button type="submit" onClick={() => window.history.back()}>
                     Approve
                   </Button>)}
                   
-                  {showapproverejectbutton && pagestate=="view" && (
+                  {showapproverejectbutton  && (
                   <Button type="submit" onClick={() => window.history.back()}>
                     Reject
                   </Button>)}

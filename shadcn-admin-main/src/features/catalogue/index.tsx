@@ -69,7 +69,7 @@ const columns: ColumnDef<ProductRow>[] = [
   },
   {
     key: "active",
-    label: "Aktif",
+    label: "Status",
     filterable: true,
     filterType: "string",
   },

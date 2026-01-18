@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button"
 import { MoreHorizontal } from "lucide-react"
 
 import { DataTable, type ColumnDef } from "@/components/datatable"
+import { useAuthStore } from '@/stores/auth-store'
+
 
 
 /* =======================
@@ -32,6 +34,7 @@ type ProductRow = {
   transactioncode : string
   requester: string
   step : string
+  workflowurl : string
 }
 
 /* =======================
@@ -67,6 +70,8 @@ const columns: ColumnDef<ProductRow>[] = [
 
 export function Tasks() {
   const navigate = useNavigate()
+  const { auth } = useAuthStore()
+  const user = auth.user
   return (
     <TasksProvider>
           <Header fixed>
@@ -86,7 +91,7 @@ export function Tasks() {
     
             {/* ✅ GENERIC DATATABLE CALLING .NET API */}
             <DataTable<ProductRow>
-              endpoint={`${API_BASE_URL}/Approval/GetAllInbox`}
+              endpoint={`${API_BASE_URL}/Approval/GetAllInbox/${user?.userID}`}
               columns={columns}
               renderActions={(row) => (
               <DropdownMenu>
@@ -101,11 +106,16 @@ export function Tasks() {
     
                   {/* ✅ View always available */}
                   <DropdownMenuItem
-                    onClick={() => navigate({ to: "/catalogue/add",
-                                              search: {
-                                                productid: row.approvalid,
-                                                pagestate: "approval", // or "1"
-                                              }, })}
+                    onClick={() =>
+                      navigate({
+                        from: '/', // ✅ FORCE ROOT CONTEXT
+                        to: row.workflowurl, // "/catalogue/add"
+                        search: {
+                          approvalid: row.approvalid,
+                          pagestate: 'approval',
+                        },
+                      })
+                    }
                   >
                     Approve / Reject
                   </DropdownMenuItem>

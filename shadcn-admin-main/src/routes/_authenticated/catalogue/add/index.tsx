@@ -13,6 +13,7 @@ const appsSearchSchema = z.object({
   // 👇 ADD THESE
   productid: z.number().optional(),
   pagestate: z.enum(['create', 'view', 'edit', 'approval']).optional(),
+  approvalid: z.number().optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/catalogue/add/')({

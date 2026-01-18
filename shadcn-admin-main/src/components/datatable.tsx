@@ -195,7 +195,24 @@ export function DataTable<T extends Record<string, unknown>>({
       params.append("orderDir", sort.dir)
     }
 
-    const res = await fetch(`${endpoint}?${params.toString()}`)
+    const url = new URL(endpoint, window.location.origin)
+
+// append filters
+    Object.entries(filters).forEach(([key, f]) => {
+      if (f.value) {
+        url.searchParams.append("column", key)
+        url.searchParams.append("operator", f.operator)
+        url.searchParams.append("value", f.value)
+      }
+    })
+
+    // append sorting
+    if (sort) {
+      url.searchParams.append("orderBy", sort.key)
+      url.searchParams.append("orderDir", sort.dir)
+    }
+
+    const res = await fetch(url.toString())
     const json = await res.json()
 
     setData(Array.isArray(json) ? json : [])
