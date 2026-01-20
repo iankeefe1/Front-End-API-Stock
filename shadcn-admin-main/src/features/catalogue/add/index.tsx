@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react"
 import { API_BASE_URL, IMG_API_BASE_URL} from "@/config/api"
-import Swal from 'sweetalert2'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Separator } from "@/components/ui/separator"
 import { ConfigDrawer } from "@/components/config-drawer"
@@ -58,6 +57,8 @@ export function CatalogueAdd() {
   const [catalogueCode, setcatalogueCode] = useState("")
   const [cataloguecategory, setcataloguecategory] = useState("")
   const [date, setDate] = useState<Date | undefined>(undefined)
+  const [mindate, setminDate] = useState<Date | undefined>(undefined)
+  const [maxdate, setmaxDate] = useState<Date | undefined>(undefined)
   const [catalogueSpecification, setcatalogueSpecification] = useState("")
   const [description, setDescription] = useState("")
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -67,11 +68,12 @@ export function CatalogueAdd() {
   const [catalogueUOM, setCatalogueUOM] = useState("")
   const [errors, setErrors] = useState<{ catalogueName?: string; catalogueCode?: string; cataloguecategory?: 
     string; date?: string; catalogueSpecification?: string; imageName?: string;
-    catalogueprice?: string; cataloguecounterparty?: string; catalogueUOM?: string; 
+    catalogueprice?: string; cataloguecounterparty?: string; catalogueUOM?: string; mindate?: string; maxdate?: string;
    }>({})
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [submitComment, setSubmitComment] = useState("")
   const [commentError, setCommentError] = useState("")
+  const [submitError] = useState("")
   //  const { toast } = useToast()
   // State
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -91,9 +93,12 @@ export function CatalogueAdd() {
   const showExtraButton = pagestate != "view" && pagestate != "approval"
   const showapproverejectbutton = pagestate === "approval"
   const isReadOnly = pagestate === 'view' || pagestate ==="approval"
-
+  // const { toast } = useToast()
+  const [successOpen, setSuccessOpen] = useState(false)
   // 👇 final condition
   const shouldDisable = isReadOnly && (!!productid || !!approvalid)
+  const [errorOpen, setErrorOpen] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   // Condition
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -124,6 +129,14 @@ export function CatalogueAdd() {
 
         if (data.listingDate) {
           setDate(new Date(data.listingDate))
+        }
+
+        if (data.mindate) {
+          setminDate(new Date(data.mindate))
+        }
+
+        if (data.maxdate) {
+          setmaxDate(new Date(data.maxdate))
         }
 
         if (data.imageUrl) {
@@ -164,10 +177,20 @@ export function CatalogueAdd() {
           setDate(new Date(data.listingDate))
         }
 
+        if (data.mindate) {
+          setminDate(new Date(data.mindate))
+        }
+
+        if (data.maxdate) {
+          setmaxDate(new Date(data.maxdate))
+        }
+
         if (data.imageUrl) {
           setImagePreview(`${IMG_API_BASE_URL}${data.imageUrl}`)
           setImageName("Existing image")
         }
+
+        
     }
 
     fetchProduct()
@@ -175,6 +198,128 @@ export function CatalogueAdd() {
   // Fetch product when VIEW
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   
+  const validateForm = () => {
+  const newErrors: typeof errors = {}
+
+  if (!catalogueName.trim())
+    newErrors.catalogueName = "Product name is required"
+
+  if (!catalogueCode.trim())
+    newErrors.catalogueCode = "Product code is required"
+
+  if (!cataloguecategory.trim())
+    newErrors.cataloguecategory = "Catalogue category is required"
+
+  if (!date)
+    newErrors.date = "Listing Date is required"
+
+  if (!mindate)
+    newErrors.mindate = "Minimum Time Period is required"
+
+  if (!maxdate)
+    newErrors.maxdate = "Maximum Time Period is required"
+
+  if (!catalogueSpecification.trim())
+    newErrors.catalogueSpecification = "Product Specification is required"
+
+  const file = fileRef.current?.files?.[0]
+  if (!file)
+    newErrors.imageName = "Product Image is required"
+
+  if (!catalogueprice)
+    newErrors.catalogueprice = "Product price is required"
+
+  if (!cataloguecounterparty.trim())
+    newErrors.cataloguecounterparty = "Product counterparty is required"
+
+  if (!catalogueUOM.trim())
+    newErrors.catalogueUOM = "Product UOM is required"
+
+  setErrors(newErrors)
+
+  // ✅ return validation result
+  return Object.keys(newErrors).length === 0
+  }
+
+  type ValidationValue =
+  | string
+  | number
+  | ""
+  | Date
+  | undefined
+  | null
+  | File
+  // Validation
+ const validateField = (
+  field: keyof typeof errors,
+  value: ValidationValue
+) => {
+  let message = ""
+
+  switch (field) {
+    case "catalogueName":
+      if (typeof value === "string" && !value.trim())
+        message = "Product name is required"
+      break
+
+    case "catalogueCode":
+      if (typeof value === "string" && !value.trim())
+        message = "Product code is required"
+      break
+
+    case "catalogueprice":
+      if (value === "" || value === null)
+        message = "Product price is required"
+      break
+
+    case "cataloguecategory":
+      if (typeof value === "string" && !value.trim())
+        message = "Catalogue category is required"
+      break
+
+    case "catalogueSpecification":
+      if (typeof value === "string" && !value.trim())
+        message = "Product Specification is required"
+      break
+
+    case "cataloguecounterparty":
+      if (typeof value === "string" && !value.trim())
+        message = "Product counterparty is required"
+      break
+
+    case "catalogueUOM":
+      if (typeof value === "string" && !value.trim())
+        message = "Product UOM is required"
+      break
+
+    case "date":
+      if (!value)
+        message = "Listing Date is required"
+      break
+    
+    case "mindate":
+      if (!value)
+        message = "Minimum Time Period is required"
+      break
+
+    case "maxdate":
+      if (!value)
+        message = "Maximum Time Period is required"
+      break
+
+    case "imageName":
+      if (!value)
+        message = "Product Image is required"
+      break
+  }
+
+  setErrors((prev) => ({
+    ...prev,
+    [field]: message || undefined,
+  }))
+}
+
+
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   // Button Clicked
   const handleSubmit = async () => {
@@ -190,6 +335,8 @@ export function CatalogueAdd() {
   if (!catalogueCode.trim()) newErrors.catalogueCode = "Product code is required"
   if (!cataloguecategory.trim()) newErrors.cataloguecategory = "Catalogue category is required"
   if (!date) newErrors.date = "Listing Date is required"
+  if (!mindate) newErrors.mindate = "Minimum Time Period is required"
+  if (!maxdate) newErrors.maxdate = "Maximum Time Period is required"
   if (!catalogueSpecification.trim()) newErrors.catalogueSpecification = "Product Specification is required"
   const file = fileRef.current?.files?.[0]  
   if (!file) {
@@ -227,7 +374,25 @@ export function CatalogueAdd() {
     // console.log("ListingDate = ", yyyyMMdd);
 
     formData.append("ListingDate", yyyyMMdd)
-  }
+    }
+
+    if (mindate) {
+    const yyyyMMddmin = mindate.toISOString().split("T")[0]
+
+    // // eslint-disable-next-line no-console
+    // console.log("ListingDate = ", yyyyMMdd);
+
+    formData.append("MinDateTransaction", yyyyMMddmin)
+    } 
+
+    if (maxdate) {
+    const yyyyMMddmax = maxdate.toISOString().split("T")[0]
+
+    // // eslint-disable-next-line no-console
+    // console.log("ListingDate = ", yyyyMMdd);
+
+    formData.append("MaxDateTransaction", yyyyMMddmax)
+    } 
     // console.log("Image = ", fileRef.current.files[0]);
 
     // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
@@ -245,19 +410,17 @@ export function CatalogueAdd() {
     )
 
     if (!response.ok) {
-      throw new Error("Failed to save catalogue")
+      const errorData = await response.json().catch(() => null)
+      setErrorMessage(
+        errorData?.message || "Something went wrong"
+      )
+      setErrorOpen(true)
+      return
     }
-  
-
-  
-
-  Swal.fire({
-  title: "Drag me!",
-  icon: "success",
-  draggable: true
-});
-
-  navigate({ to: "/catalogue" })
+    else
+    {
+      setSuccessOpen(true)
+    }  
 }
 }
   // Button Clicked
@@ -292,6 +455,9 @@ export function CatalogueAdd() {
                 Catalogue Information
               </CardTitle>
             </CardHeader>
+            {submitError && (
+              <p className="text-sm text-red-600 mt-2">{submitError}</p>
+            )}
 
             <CardContent className="space-y-6">
               {/* Row 1 */}
@@ -300,7 +466,11 @@ export function CatalogueAdd() {
                   <Label>Product Name</Label>
                   <Input
                     value={catalogueName}
-                    onChange={(e) => setCatalogueName(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setCatalogueName(value)
+                      validateField("catalogueName", value)
+                    }}
                     placeholder="Type here..."
                     readOnly={shouldDisable}
                   />
@@ -315,7 +485,11 @@ export function CatalogueAdd() {
                   <Label>Product Code</Label>
                   <Input
                     value={catalogueCode}
-                    onChange={(e) => setcatalogueCode(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      setcatalogueCode(value)
+                      validateField("catalogueCode", value)
+                    }}
                     placeholder="Type here..."
                     readOnly={shouldDisable}
                   />
@@ -339,8 +513,9 @@ export function CatalogueAdd() {
                       placeholder="0.00"
                       value={catalogueprice}
                       onChange={(e) => {
-                        const value = e.target.value
-                        setCataloguePrice(value === "" ? "" : Number(value))
+                        const value = e.target.value === "" ? "" : Number(e.target.value)
+                        setCataloguePrice(value)
+                        validateField("catalogueprice", value)
                       }}
                       onKeyDown={(e) => {
                         if (["e", "E", "+", "-"].includes(e.key)) {
@@ -363,7 +538,10 @@ export function CatalogueAdd() {
                  <CounterpartyDropdown
                     apiUrl={`${API_BASE_URL}/CounterParty/GetCounterpartyValuesActive`}
                     value={cataloguecounterparty}
-                    onChange={setcataloguecounterparty}
+                    onChange={(value) => {
+                      setcataloguecounterparty(value)
+                      validateField("cataloguecounterparty", value)
+                    }}
                     readOnly={shouldDisable}
                   />
                   {errors.cataloguecounterparty && (
@@ -383,7 +561,10 @@ export function CatalogueAdd() {
                     apiUrl={`${API_BASE_URL}/MasterValue/GetMasterValueProductCategory`}
                     placeholder="Select Product Category"
                     value={cataloguecategory}
-                    onValueChange={setcataloguecategory}
+                    onValueChange={(value) => {
+                      setcataloguecategory(value)
+                      validateField("cataloguecategory", value)
+                    }}
                     readOnly={shouldDisable}
                   />
                   {errors.cataloguecategory && (
@@ -397,7 +578,10 @@ export function CatalogueAdd() {
                   <Label>Product Listing Date</Label>
                   <DatePicker
                     selected={date}
-                    onSelect={setDate}
+                    onSelect={(value) => {
+                      setDate(value)
+                      validateField("date", value)
+                    }}
                     className="w-full h-10 justify-start"
                     readOnly={shouldDisable}
                   />
@@ -407,7 +591,47 @@ export function CatalogueAdd() {
                     </p>
                   )}
                 </div>
-              </div>          
+              </div>
+
+              {/* Row 5 */}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                   <Label>Minimum Time Period</Label>
+                  <DatePicker
+                    selected={mindate}
+                    onSelect={(value) => {
+                      setminDate(value)
+                      validateField("mindate", value)
+                    }}
+                    className="w-full h-10 justify-start"
+                    readOnly={shouldDisable}
+                  />
+                  {errors.mindate && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.mindate}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Maximum Time Period</Label>
+                  <DatePicker
+                    selected={maxdate}
+                    onSelect={(value) => {
+                      setmaxDate(value)
+                      validateField("maxdate", value)
+                    }}
+                    className="w-full h-10 justify-start"
+                    readOnly={shouldDisable}
+                  />
+                  {errors.maxdate && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors.maxdate}
+                    </p>
+                  )}
+                </div>
+              </div> 
+
               <div className="space-y-2">
                 <Label>Unit Of Measurement</Label>
 
@@ -415,7 +639,10 @@ export function CatalogueAdd() {
                   apiUrl={`${API_BASE_URL}/MasterValue/GetMasterValueUOM`}
                   placeholder="Select Unit Of Measurement"
                   value={catalogueUOM}
-                  onValueChange={setCatalogueUOM}
+                  onValueChange={(value) => {
+                      setCatalogueUOM(value)
+                      validateField("catalogueUOM", value)
+                    }}
                   readOnly={shouldDisable}
                 />
                 {errors.catalogueUOM && (
@@ -430,9 +657,11 @@ export function CatalogueAdd() {
                 <Label>Product Specification</Label>
                 <Textarea
                   value={catalogueSpecification}
-                  onChange={(e) =>
-                    setcatalogueSpecification(e.target.value)
-                  }
+                  onChange={(e) => {
+                      const value = e.target.value
+                      setcatalogueSpecification(value)
+                      validateField("catalogueSpecification", value)
+                    }}
                   placeholder="Type here..."
                   className="resize-y"
                   readOnly={shouldDisable}
@@ -541,10 +770,15 @@ export function CatalogueAdd() {
                   
                    {showExtraButton  && (
                  <Button
-                  type="submit"
+                  type="button"
                   onClick={() => {
                     setCommentError("")
-                    setConfirmOpen(true)
+
+                    const isValid = validateForm()
+
+                    if (!isValid) return // ❌ stop here, show errors
+
+                    setConfirmOpen(true) // ✅ open popup only if valid
                   }}
                 >
                   Submit
@@ -612,7 +846,48 @@ export function CatalogueAdd() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      </Main>
+      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            ✅ Submission Successful
+          </DialogTitle>
+          <DialogDescription>
+            Your catalogue has been successfully submitted.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              setSuccessOpen(false)
+              navigate({ to: "/catalogue" })
+            }}
+          >
+            OK
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-red-600">
+            ❌ Submission Failed
+          </DialogTitle>
+          <DialogDescription>
+            {errorMessage}
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button onClick={() => setErrorOpen(false)}>
+            OK
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </Main>
     </>
   )
 }

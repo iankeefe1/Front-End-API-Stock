@@ -28,6 +28,7 @@ import { DataTable, type ColumnDef } from "@/components/datatable"
 ======================= */
 
 type ProductRow = {
+  transactionNumber: string
   productId: number
   productName: string
   counterparty : string
@@ -43,6 +44,12 @@ type ProductRow = {
 ======================= */
 
 const columns: ColumnDef<ProductRow>[] = [
+  {
+    key: "transactionNumber",
+    label: "Transaction Number",
+    filterable: true,
+    filterType: "string",
+  },
   {
     key: "productName",
     label: "Product Name",
