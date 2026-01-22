@@ -71,6 +71,7 @@ export function CatalogueAdd() {
     catalogueprice?: string; cataloguecounterparty?: string; catalogueUOM?: string; mindate?: string; maxdate?: string;
    }>({})
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmOpenApprove, setConfirmOpenApprove] = useState(false)
   const [submitComment, setSubmitComment] = useState("")
   const [commentError, setCommentError] = useState("")
   const [submitError] = useState("")
@@ -382,7 +383,7 @@ export function CatalogueAdd() {
     // // eslint-disable-next-line no-console
     // console.log("ListingDate = ", yyyyMMdd);
 
-    formData.append("MinDateTransaction", yyyyMMddmin)
+    formData.append("EffectiveDate", yyyyMMddmin)
     } 
 
     if (maxdate) {
@@ -391,7 +392,7 @@ export function CatalogueAdd() {
     // // eslint-disable-next-line no-console
     // console.log("ListingDate = ", yyyyMMdd);
 
-    formData.append("MaxDateTransaction", yyyyMMddmax)
+    formData.append("ExpiredDate", yyyyMMddmax)
     } 
     // console.log("Image = ", fileRef.current.files[0]);
 
@@ -422,6 +423,50 @@ export function CatalogueAdd() {
       setSuccessOpen(true)
     }  
 }
+}
+
+const handleApprove = async () => {
+  // if (!fileRef.current?.files?.[0]) {
+  //   toast({
+  //     title: "Image Required",
+  //     description: "Please select an image before submitting.",
+  //     variant: "destructive",
+  //   })
+
+  const newErrors: typeof errors = {}
+
+  setErrors(newErrors)
+
+  if(approvalid && user)
+  {
+    if (Object.keys(newErrors).length === 0) {
+      const formData = new FormData()
+
+      formData.append("ApprovalID", approvalid.toString())
+      formData.append("Userid", user.userID.toString())
+      formData.append("Comment", submitComment)
+
+      const response = await fetch(
+        `${API_BASE_URL}/Product/ApproveProducts`,
+        {
+          method: "PUT",
+          body: formData
+        }
+      )
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        setErrorMessage(
+          errorData?.message || "Something went wrong"
+        )
+        setErrorOpen(true)
+        return
+      }
+      else
+      {
+        setSuccessOpen(true)
+      }  
+    }
+  }
 }
   // Button Clicked
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -596,7 +641,7 @@ export function CatalogueAdd() {
               {/* Row 5 */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
-                   <Label>Minimum Time Period</Label>
+                   <Label>Effective Date</Label>
                   <DatePicker
                     selected={mindate}
                     onSelect={(value) => {
@@ -614,7 +659,7 @@ export function CatalogueAdd() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Maximum Time Period</Label>
+                  <Label>Expired Date</Label>
                   <DatePicker
                     selected={maxdate}
                     onSelect={(value) => {
@@ -759,9 +804,18 @@ export function CatalogueAdd() {
               {/* ✅ Submit + Back buttons (bottom-right with spacing) */}
                 <div className="pt-4 flex justify-end gap-3">
                   {showapproverejectbutton  && (
-                  <Button type="submit" onClick={() => window.history.back()}>
-                    Approve
-                  </Button>)}
+                 <Button
+                  type="button"
+                  onClick={() => {
+                    setCommentError("")
+
+
+                    setConfirmOpenApprove(true) // ✅ open popup only if valid
+                  }}
+                >
+                  Approve
+                </Button>)}
+
                   
                   {showapproverejectbutton  && (
                   <Button type="submit" onClick={() => window.history.back()}>
@@ -846,7 +900,63 @@ export function CatalogueAdd() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+      <Dialog open={confirmOpenApprove} onOpenChange={setConfirmOpenApprove}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approve Submission</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to Approve? Please add a comment first!
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Comment textbox */}
+          <div className="space-y-2">
+            <Label>Comment</Label>
+            <Textarea
+              placeholder="Add your comment here..."
+              value={submitComment}
+              onChange={(e) => {
+                setSubmitComment(e.target.value)
+                setCommentError("")
+              }}
+            />
+            {commentError && (
+              <p className="text-sm text-red-500">{commentError}</p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmOpenApprove(false)}
+            >
+              Back
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => {
+                if (!submitComment.trim()) {
+                  setCommentError("Comment is required")
+                  return
+                }
+                setConfirmOpenApprove(false)
+                handleApprove()
+              }}
+            >
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={successOpen}
+        onOpenChange={(open) => {
+          setSuccessOpen(open)
+          if (!open) navigate({ to: "/catalogue" })
+        }}
+      >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
