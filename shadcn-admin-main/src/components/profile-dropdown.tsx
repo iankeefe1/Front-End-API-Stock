@@ -18,8 +18,8 @@ export function ProfileDropdown() {
 
   const user = auth.user
   
-  // eslint-disable-next-line no-console
-  console.log('AUTH USER:', user)
+  // // eslint-disable-next-line no-console
+  // console.log('AUTH USER:', user)
 
   return (
     <>
