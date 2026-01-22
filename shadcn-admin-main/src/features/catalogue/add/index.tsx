@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { API_BASE_URL, IMG_API_BASE_URL} from "@/config/api"
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useNavigate, useSearch ,useRouter } from '@tanstack/react-router'
 import { Separator } from "@/components/ui/separator"
 import { ConfigDrawer } from "@/components/config-drawer"
 import { Header } from "@/components/layout/header"
@@ -75,6 +75,7 @@ export function CatalogueAdd() {
   const [submitComment, setSubmitComment] = useState("")
   const [commentError, setCommentError] = useState("")
   const [submitError] = useState("")
+  const router = useRouter()
   //  const { toast } = useToast()
   // State
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -96,6 +97,7 @@ export function CatalogueAdd() {
   const isReadOnly = pagestate === 'view' || pagestate ==="approval"
   // const { toast } = useToast()
   const [successOpen, setSuccessOpen] = useState(false)
+   const [successOpenApprove, setSuccessOpenApprove] = useState(false)
   // 👇 final condition
   const shouldDisable = isReadOnly && (!!productid || !!approvalid)
   const [errorOpen, setErrorOpen] = useState(false)
@@ -463,7 +465,7 @@ const handleApprove = async () => {
       }
       else
       {
-        setSuccessOpen(true)
+        setSuccessOpenApprove(true)
       }  
     }
   }
@@ -472,6 +474,7 @@ const handleApprove = async () => {
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   return (
     <>
+      {/* BODY*/}
       <Header>
         <div className="ms-auto flex items-center gap-4">
           <ThemeSwitch />
@@ -850,6 +853,9 @@ const handleApprove = async () => {
             </CardContent>
           </Card>
         </div>
+        {/* BODY*/}
+
+        {/* POP UP SUBMIT COMMENT*/}
         <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -874,7 +880,6 @@ const handleApprove = async () => {
               <p className="text-sm text-red-500">{commentError}</p>
             )}
           </div>
-
           <DialogFooter className="gap-2">
             <Button
               type="button"
@@ -900,6 +905,8 @@ const handleApprove = async () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* POP UP APPROVE COMMENT*/}
       <Dialog open={confirmOpenApprove} onOpenChange={setConfirmOpenApprove}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -907,9 +914,7 @@ const handleApprove = async () => {
             <DialogDescription>
               Are you sure you want to Approve? Please add a comment first!
             </DialogDescription>
-          </DialogHeader>
-
-          {/* Comment textbox */}
+          </DialogHeader>          
           <div className="space-y-2">
             <Label>Comment</Label>
             <Textarea
@@ -950,6 +955,8 @@ const handleApprove = async () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* POP UP SUBMIT COMPLETE */}
       <Dialog
         open={successOpen}
         onOpenChange={(open) => {
@@ -979,6 +986,42 @@ const handleApprove = async () => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* POP UP APPROVE COMPLETE */}
+    <Dialog
+    open={successOpenApprove}
+    onOpenChange={(open) => {
+      setSuccessOpenApprove(open)
+      if (!open) {
+        router.history.back()
+      }
+    }}
+    >
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            ✅ Approve Successful
+          </DialogTitle>
+          <DialogDescription>
+            Your catalogue has been successfully approved.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              setSuccessOpenApprove(false)
+              router.history.back()
+            }}
+          >
+            OK
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+
+    {/* POP UP FAILED */}
     <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
