@@ -5,6 +5,7 @@ import { API_BASE_URL } from '@/config/api'
 export default function App() {
   const { auth } = useAuthStore()
 
+  // restore user from token
   useEffect(() => {
     const token = auth.accessToken
     if (!token || auth.user) return
@@ -20,12 +21,13 @@ export default function App() {
       })
       .then((data) => {
         auth.setUser({
+          userID: data.userID,
           username: data.username,
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
           role: data.role ?? [],
-          exp: Date.now() + 24 * 60 * 60 * 1000,
+          exp: Date.now() + 30 * 60 * 1000,
         })
       })
       .catch(() => {
@@ -33,5 +35,21 @@ export default function App() {
       })
   }, [auth])
 
-  return null // IMPORTANT: router renders via main.tsx
+  // ✅ AUTO LOGOUT WHEN EXP EXPIRES
+  useEffect(() => {
+    const checkSession = () => {
+      const user = auth.user
+      if (user && Date.now() > user.exp) {
+        auth.reset()
+        window.location.href = "/login"
+      }
+    }
+
+    checkSession()
+    const interval = setInterval(checkSession, 10000)
+
+    return () => clearInterval(interval)
+  }, [auth])
+
+  return null
 }

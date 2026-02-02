@@ -58,7 +58,7 @@ export function UserAuthForm() {
         lastName: res.user.lastName,
         email: res.user.email,
         role: [],
-        exp: Date.now() + 24 * 60 * 60 * 1000,
+        exp: Date.now() + 30 * 60 * 1000,
       })
 
 
