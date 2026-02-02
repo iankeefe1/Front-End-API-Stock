@@ -72,6 +72,7 @@ export function CatalogueAdd() {
    }>({})
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmOpenApprove, setConfirmOpenApprove] = useState(false)
+  const [confirmOpenReject, setConfirmOpenReject] = useState(false)
   const [submitComment, setSubmitComment] = useState("")
   const [commentError, setCommentError] = useState("")
   const [submitError] = useState("")
@@ -98,6 +99,7 @@ export function CatalogueAdd() {
   // const { toast } = useToast()
   const [successOpen, setSuccessOpen] = useState(false)
    const [successOpenApprove, setSuccessOpenApprove] = useState(false)
+   const [successOpenReject, setSuccessOpenReject] = useState(false)
   // 👇 final condition
   const shouldDisable = isReadOnly && (!!productid || !!approvalid)
   const [errorOpen, setErrorOpen] = useState(false)
@@ -469,6 +471,50 @@ const handleApprove = async () => {
     }
   }
 }
+
+const handleReject = async () => {
+  // if (!fileRef.current?.files?.[0]) {
+  //   toast({
+  //     title: "Image Required",
+  //     description: "Please select an image before submitting.",
+  //     variant: "destructive",
+  //   })
+
+  const newErrors: typeof errors = {}
+
+  setErrors(newErrors)
+
+  if(approvalid && user)
+  {
+    if (Object.keys(newErrors).length === 0) {
+      const formData = new FormData()
+
+      formData.append("ApprovalID", approvalid.toString())
+      formData.append("Userid", user.userID.toString())
+      formData.append("Comment", submitComment)
+
+      const response = await fetch(
+        `${API_BASE_URL}/Product/RejectProducts`,
+        {
+          method: "PUT",
+          body: formData
+        }
+      )
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null)
+        setErrorMessage(
+          errorData?.message || "Something went wrong"
+        )
+        setErrorOpen(true)
+        return
+      }
+      else
+      {
+        setSuccessOpenReject(true)
+      }  
+    }
+  }
+}
   // Button Clicked
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   return (
@@ -817,12 +863,20 @@ const handleApprove = async () => {
                 >
                   Approve
                 </Button>)}
-
                   
-                  {showapproverejectbutton  && (
-                  <Button type="submit" onClick={() => window.history.back()}>
-                    Reject
-                  </Button>)}
+                   {showapproverejectbutton  && (
+                 <Button
+                  type="button"
+                  onClick={() => {
+                    setCommentError("")
+
+
+                    setConfirmOpenReject(true) // ✅ open popup only if valid
+                  }}
+                >
+                  Reject
+                </Button>)}
+                
                   
                    {showExtraButton  && (
                  <Button
@@ -955,6 +1009,56 @@ const handleApprove = async () => {
         </DialogContent>
       </Dialog>
 
+      {/* POP UP REJECT COMMENT*/}
+      <Dialog open={confirmOpenReject} onOpenChange={setConfirmOpenReject}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject Submission</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to Reject? Please add a comment first!
+            </DialogDescription>
+          </DialogHeader>          
+          <div className="space-y-2">
+            <Label>Comment</Label>
+            <Textarea
+              placeholder="Add your comment here..."
+              value={submitComment}
+              onChange={(e) => {
+                setSubmitComment(e.target.value)
+                setCommentError("")
+              }}
+            />
+            {commentError && (
+              <p className="text-sm text-red-500">{commentError}</p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmOpenReject(false)}
+            >
+              Back
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => {
+                if (!submitComment.trim()) {
+                  setCommentError("Comment is required")
+                  return
+                }
+                setConfirmOpenReject(false)
+                handleReject()
+              }}
+            >
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* POP UP SUBMIT COMPLETE */}
       <Dialog
         open={successOpen}
@@ -1019,6 +1123,38 @@ const handleApprove = async () => {
       </DialogContent>
     </Dialog>
 
+    {/* POP UP REJECT COMPLETE */}
+    <Dialog
+    open={successOpenReject}
+    onOpenChange={(open) => {
+      setSuccessOpenReject(open)
+      if (!open) {
+        router.history.back()
+      }
+    }}
+    >
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            ✅ Reject Successful
+          </DialogTitle>
+          <DialogDescription>
+            Your catalogue has been successfully rejected.
+          </DialogDescription>
+        </DialogHeader>
+
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              setSuccessOpenReject(false)
+              router.history.back()
+            }}
+          >
+            OK
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     {/* POP UP FAILED */}
     <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
