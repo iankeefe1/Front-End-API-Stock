@@ -401,8 +401,7 @@ export function CatalogueAdd() {
     // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
     
 
-    // eslint-disable-next-line no-console
-    console.log("userId = ",user?.userID);
+
 
     const response = await fetch(
       `${API_BASE_URL}/Product/SubmitProducts?userId=${user?.userID}`,
