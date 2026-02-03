@@ -301,7 +301,7 @@ export function CatalogueAdd() {
       if (!value)
         message = "Listing Date is required"
       break
-    
+
     case "mindate":
       if (!value)
         message = "Minimum Time Period is required"
@@ -318,12 +318,14 @@ export function CatalogueAdd() {
       break
   }
 
-  setErrors((prev) => ({
-    ...prev,
-    [field]: message || undefined,
-  }))
-}
+  const newMsg = message || undefined
 
+  setErrors((prev) => {
+    // prevent rerender if unchanged
+    if (prev[field] === newMsg) return prev
+    return { ...prev, [field]: newMsg }
+  })
+}
 
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
   // Button Clicked
@@ -559,11 +561,8 @@ const handleReject = async () => {
                   <Label>Product Name</Label>
                   <Input
                     value={catalogueName}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      setCatalogueName(value)
-                      validateField("catalogueName", value)
-                    }}
+                    onChange={(e) => setCatalogueName(e.target.value)}
+                    onBlur={(e) => validateField("catalogueName", e.target.value)}
                     placeholder="Type here..."
                     readOnly={shouldDisable}
                   />
@@ -578,11 +577,8 @@ const handleReject = async () => {
                   <Label>Product Code</Label>
                   <Input
                     value={catalogueCode}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      setcatalogueCode(value)
-                      validateField("catalogueCode", value)
-                    }}
+                    onChange={(e) => setcatalogueCode(e.target.value)}
+                    onBlur={(e) => validateField("catalogueCode", e.target.value)}
                     placeholder="Type here..."
                     readOnly={shouldDisable}
                   />
@@ -598,22 +594,24 @@ const handleReject = async () => {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label>Product Price</Label>
-                    <Input
+                   <Input
                       type="number"
                       inputMode="decimal"
                       step="0.01"
                       min="0"
                       placeholder="0.00"
                       value={catalogueprice}
-                      onChange={(e) => {
-                        const value = e.target.value === "" ? "" : Number(e.target.value)
-                        setCataloguePrice(value)
-                        validateField("catalogueprice", value)
-                      }}
+                      onChange={(e) =>
+                        setCataloguePrice(e.target.value === "" ? "" : Number(e.target.value))
+                      }
+                      onBlur={(e) =>
+                        validateField(
+                          "catalogueprice",
+                          e.target.value === "" ? "" : Number(e.target.value)
+                        )
+                      }
                       onKeyDown={(e) => {
-                        if (["e", "E", "+", "-"].includes(e.key)) {
-                          e.preventDefault()
-                        }
+                        if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault()
                       }}
                       readOnly={shouldDisable}
                     />
@@ -733,9 +731,9 @@ const handleReject = async () => {
                   placeholder="Select Unit Of Measurement"
                   value={catalogueUOM}
                   onValueChange={(value) => {
-                      setCatalogueUOM(value)
-                      validateField("catalogueUOM", value)
-                    }}
+                    setCatalogueUOM(value)
+                    validateField("catalogueUOM", value)
+                  }}
                   readOnly={shouldDisable}
                 />
                 {errors.catalogueUOM && (
@@ -750,11 +748,10 @@ const handleReject = async () => {
                 <Label>Product Specification</Label>
                 <Textarea
                   value={catalogueSpecification}
-                  onChange={(e) => {
-                      const value = e.target.value
-                      setcatalogueSpecification(value)
-                      validateField("catalogueSpecification", value)
-                    }}
+                  onChange={(e) => setcatalogueSpecification(e.target.value)}
+                  onBlur={(e) =>
+                    validateField("catalogueSpecification", e.target.value)
+                  }
                   placeholder="Type here..."
                   className="resize-y"
                   readOnly={shouldDisable}
