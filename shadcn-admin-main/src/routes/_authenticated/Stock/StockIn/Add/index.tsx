@@ -9,6 +9,11 @@ const appsSearchSchema = z.object({
     .catch(undefined),
   filter: z.string().optional().catch(''),
   sort: z.enum(['asc', 'desc']).optional().catch(undefined),
+
+  // 👇 ADD THESE
+  transactionid: z.number().optional(),
+  pagestate: z.enum(['create', 'view', 'edit', 'approval']).optional(),
+  approvalid: z.number().optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/Stock/StockIn/Add/')({
