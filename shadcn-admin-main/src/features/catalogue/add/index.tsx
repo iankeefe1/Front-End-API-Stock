@@ -86,6 +86,9 @@ export function CatalogueAdd() {
   const { productid, pagestate, approvalid } = useSearch({
     from: '/_authenticated/catalogue/add/',
   })
+
+  const isEditMode = pagestate === "edit"
+  // const numericId = Number(productid)
   // Route params
   // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -228,8 +231,10 @@ export function CatalogueAdd() {
     newErrors.catalogueSpecification = "Product Specification is required"
 
   const file = fileRef.current?.files?.[0]
-  if (!file)
-    newErrors.imageName = "Product Image is required"
+
+  if (!file && !isEditMode) {
+  newErrors.imageName = "Product Image is required"
+}
 
   if (!catalogueprice)
     newErrors.catalogueprice = "Product price is required"
@@ -345,9 +350,15 @@ export function CatalogueAdd() {
   if (!mindate) newErrors.mindate = "Minimum Time Period is required"
   if (!maxdate) newErrors.maxdate = "Maximum Time Period is required"
   if (!catalogueSpecification.trim()) newErrors.catalogueSpecification = "Product Specification is required"
-  const file = fileRef.current?.files?.[0]  
-  if (!file) {
-  newErrors.imageName = "Product Image is required"
+  const file = fileRef.current?.files?.[0]
+
+  if (!file && !isEditMode) {
+    newErrors.imageName = "Product Image is required"
+  }
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors)
+    return
   }
   // if (fileRef.current.files[0] == null) newErrors.imageName = "Product Image is required"
   if (!catalogueprice) newErrors.catalogueprice = "Product price is required"
@@ -369,9 +380,10 @@ export function CatalogueAdd() {
     formData.append("Description", description)
     formData.append("MVUnitOfMeasure", catalogueUOM)
     formData.append("Comment", submitComment)
-    if (file) {
-      formData.append("Image", file) // ✅ safe
+    if (fileRef.current?.files?.[0]) {
+    formData.append("Image", fileRef.current.files[0])
     }
+    
     
 
     if (date) {
@@ -405,7 +417,9 @@ export function CatalogueAdd() {
     // fetch("https://localhost:7209/Product/Ping", { method: "POST" });
     
 
-
+    if (productid && productid > 0) {
+      formData.append("productid", productid.toString())
+    }
 
     const response = await fetch(
       `${API_BASE_URL}/Product/SubmitProducts?userId=${user?.userID}`,

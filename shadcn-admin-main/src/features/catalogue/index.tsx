@@ -130,25 +130,37 @@ export function Catalogue() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
-              {/* ✅ View always available */}
-              <DropdownMenuItem
-                onClick={() => navigate({ to: "/catalogue/add",
-                                          search: {
-                                            productid: row.productId,
-                                            pagestate: "view", // or "1"
-                                          }, })}
-              >
-                View
-              </DropdownMenuItem>
-
-              {/* ✅ Only show Edit for special data */}
-              {/* {row.price > 100 && ( // 🧠 Example condition: only expensive items are editable
+               {/* ✅ View always available */}
                 <DropdownMenuItem
-                  onClick={() => alert(`Edit Product ID: ${row.productId}`)}
+                  onClick={() =>
+                    navigate({
+                      to: "/catalogue/add",
+                      search: {
+                        productid: row.productId,
+                        pagestate: "view",
+                      },
+                    })
+                  }
                 >
-                  Edit
+                  View
                 </DropdownMenuItem>
-              )} */}
+
+                {/* ✅ Show Edit ONLY if NOT Completed */}
+                {row.approvalStatus?.trim().toLowerCase() === "completed" && (
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigate({
+                        to: "/catalogue/add",
+                        search: {
+                          productid: row.productId,
+                          pagestate: "edit",
+                        },
+                      })
+                    }
+                  >
+                    Edit
+                  </DropdownMenuItem>
+                )}
             </DropdownMenuContent>
           </DropdownMenu>
         )}
